@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "instantDealing (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "instantDealing (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

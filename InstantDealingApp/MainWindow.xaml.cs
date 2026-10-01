@@ -84,79 +84,13 @@ namespace InstantDealingApp
             return new List<string>();
         }
 
-        private void showHideImg(KeyEventArgs e, TextBox textBox)
-        {
-            if (textBox == labTextbox)
-            {
-                if (e.Key == Key.D)
-                {
-                    takeGold.Visibility = Visibility.Hidden;
-                   // takeMoney.Visibility = Visibility.Hidden;
-                    //giveMoney.Visibility = Visibility.Hidden;
-
-                    giveGold.Visibility = Visibility.Visible;
-                }
-                else if (e.Key == Key.L)
-                {
-                    giveGold.Visibility = Visibility.Hidden;
-                    //takeMoney.Visibility = Visibility.Hidden;
-                    //giveMoney.Visibility = Visibility.Hidden;
-
-                    takeGold.Visibility = Visibility.Visible;
-
-                }
-
-            }
-            else if (textBox == cashTextbox)
-            {
-
-                if (e.Key == Key.D)
-                {
-                    takeMoney.Visibility = Visibility.Hidden;
-                    //giveGold.Visibility = Visibility.Hidden;
-                    //takeGold.Visibility = Visibility.Hidden;
-
-                    giveMoney.Visibility = Visibility.Visible;
-                }
-                else if (e.Key == Key.L)
-                {
-                    giveMoney.Visibility = Visibility.Hidden;
-                    //giveGold.Visibility = Visibility.Hidden;
-                    //takeGold.Visibility = Visibility.Hidden;
-
-                    takeMoney.Visibility = Visibility.Visible;
-
-                }
-            }
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-            updateCashFromLab();
-        }
-
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            showHideImg(e, (TextBox)sender);
-        }
-
-        private void cashTextbox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            //showHideImg(e, sender as TextBox);
-
-        }
         private void cashTextbox_KeyDown(object sender, KeyEventArgs e)
         {
-            showHideImg(e, (TextBox)sender);
-
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var names = LoadCustomerNames();
-            customers.ItemsSource = names;
-            customersCash.ItemsSource = names;
-            customersTest.ItemsSource = names;
+            if (customersTest != null) customersTest.ItemsSource = names;
             LoadPrintSettings();
             _allPrintRecords = LoadPrintHistory();
             ApplyHistoryFilters();
@@ -180,30 +114,15 @@ namespace InstantDealingApp
             {
                 var settings = new Dictionary<string, bool>();
 
-                // Lab Tab
-                if (doPrintGoldRate != null) settings["doPrintGoldRate"] = doPrintGoldRate.IsChecked ?? false;
-                if (doPrintCustomerName != null) settings["doPrintCustomerName"] = doPrintCustomerName.IsChecked ?? false;
-                if (doPrintLab != null) settings["doPrintLab"] = doPrintLab.IsChecked ?? false;
-                if (doPrintCashFromLab != null) settings["doPrintCashFromLab"] = doPrintCashFromLab.IsChecked ?? false;
-
-                // Cash Tab
-                if (doPrintGoldRateCash != null) settings["doPrintGoldRateCash"] = doPrintGoldRateCash.IsChecked ?? false;
-                if (doPrintCustomerNameCash != null) settings["doPrintCustomerNameCash"] = doPrintCustomerNameCash.IsChecked ?? false;
-                if (doPrintCash != null) settings["doPrintCash"] = doPrintCash.IsChecked ?? false;
-                if (doPrintLabFromCash != null) settings["doPrintLabFromCash"] = doPrintLabFromCash.IsChecked ?? false;
-
-                // Test Tab
+                // XRF Test Tab
                 if (doPrintGoldRateTest != null) settings["doPrintGoldRateTest"] = doPrintGoldRateTest.IsChecked ?? false;
                 if (doPrintCustomerNameTest != null) settings["doPrintCustomerNameTest"] = doPrintCustomerNameTest.IsChecked ?? false;
                 if (doPrintTotalWeight != null) settings["doPrintTotalWeight"] = doPrintTotalWeight.IsChecked ?? false;
                 if (doPrintResult != null) settings["doPrintResult"] = doPrintResult.IsChecked ?? false;
                 if (doPrintPureGold != null) settings["doPrintPureGold"] = doPrintPureGold.IsChecked ?? false;
-                if (doPrintRattiInput != null) settings["doPrintRattiInput"] = doPrintRattiInput.IsChecked ?? false;
                 if (doPrintLabor != null) settings["doPrintLabor"] = doPrintLabor.IsChecked ?? false;
-                if (doPrintRattiGoldWeight != null) settings["doPrintRattiGoldWeight"] = doPrintRattiGoldWeight.IsChecked ?? false;
+                if (doPrintGrossPureGoldCash != null) settings["doPrintGrossPureGoldCash"] = doPrintGrossPureGoldCash.IsChecked ?? false;
                 if (doPrintTotalPureGoldCash != null) settings["doPrintTotalPureGoldCash"] = doPrintTotalPureGoldCash.IsChecked ?? false;
-                if (doPrintGrossRattiCash != null) settings["doPrintGrossRattiCash"] = doPrintGrossRattiCash.IsChecked ?? false;
-                if (doPrintNetRattiCash != null) settings["doPrintNetRattiCash"] = doPrintNetRattiCash.IsChecked ?? false;
                 if (doPrintKarat != null) settings["doPrintKarat"] = doPrintKarat.IsChecked ?? false;
                 if (doPrintPurityPercent != null) settings["doPrintPurityPercent"] = doPrintPurityPercent.IsChecked ?? false;
                 if (doPrintNotes != null) settings["doPrintNotes"] = doPrintNotes.IsChecked ?? false;
@@ -225,33 +144,18 @@ namespace InstantDealingApp
                     var settings = JsonConvert.DeserializeObject<Dictionary<string, bool>>(json);
                     if (settings != null)
                     {
-                        // Lab Tab
-                        if (settings.TryGetValue("doPrintGoldRate", out bool val1)) doPrintGoldRate.IsChecked = val1;
-                        if (settings.TryGetValue("doPrintCustomerName", out bool val2)) doPrintCustomerName.IsChecked = val2;
-                        if (settings.TryGetValue("doPrintLab", out bool val3)) doPrintLab.IsChecked = val3;
-                        if (settings.TryGetValue("doPrintCashFromLab", out bool val4)) doPrintCashFromLab.IsChecked = val4;
-
-                        // Cash Tab
-                        if (settings.TryGetValue("doPrintGoldRateCash", out bool val5)) doPrintGoldRateCash.IsChecked = val5;
-                        if (settings.TryGetValue("doPrintCustomerNameCash", out bool val6)) doPrintCustomerNameCash.IsChecked = val6;
-                        if (settings.TryGetValue("doPrintCash", out bool val7)) doPrintCash.IsChecked = val7;
-                        if (settings.TryGetValue("doPrintLabFromCash", out bool val8)) doPrintLabFromCash.IsChecked = val8;
-
-                        // Test Tab
-                        if (settings.TryGetValue("doPrintGoldRateTest", out bool val9)) doPrintGoldRateTest.IsChecked = val9;
-                        if (settings.TryGetValue("doPrintCustomerNameTest", out bool val10)) doPrintCustomerNameTest.IsChecked = val10;
-                        if (settings.TryGetValue("doPrintTotalWeight", out bool val11)) doPrintTotalWeight.IsChecked = val11;
-                        if (settings.TryGetValue("doPrintResult", out bool val12)) doPrintResult.IsChecked = val12;
-                        if (settings.TryGetValue("doPrintPureGold", out bool val13)) doPrintPureGold.IsChecked = val13;
-                        if (settings.TryGetValue("doPrintRattiInput", out bool val14)) doPrintRattiInput.IsChecked = val14;
-                        if (settings.TryGetValue("doPrintLabor", out bool val15)) doPrintLabor.IsChecked = val15;
-                        if (settings.TryGetValue("doPrintRattiGoldWeight", out bool val16)) doPrintRattiGoldWeight.IsChecked = val16;
-                        if (settings.TryGetValue("doPrintTotalPureGoldCash", out bool val17)) doPrintTotalPureGoldCash.IsChecked = val17;
-                        if (settings.TryGetValue("doPrintGrossRattiCash", out bool val18)) doPrintGrossRattiCash.IsChecked = val18;
-                        if (settings.TryGetValue("doPrintNetRattiCash", out bool val19)) doPrintNetRattiCash.IsChecked = val19;
+                        // XRF Test Tab
+                        if (settings.TryGetValue("doPrintGoldRateTest", out bool val1) && doPrintGoldRateTest != null) doPrintGoldRateTest.IsChecked = val1;
+                        if (settings.TryGetValue("doPrintCustomerNameTest", out bool val2) && doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = val2;
+                        if (settings.TryGetValue("doPrintTotalWeight", out bool val3) && doPrintTotalWeight != null) doPrintTotalWeight.IsChecked = val3;
+                        if (settings.TryGetValue("doPrintResult", out bool val4) && doPrintResult != null) doPrintResult.IsChecked = val4;
+                        if (settings.TryGetValue("doPrintPureGold", out bool val5) && doPrintPureGold != null) doPrintPureGold.IsChecked = val5;
+                        if (settings.TryGetValue("doPrintLabor", out bool val6) && doPrintLabor != null) doPrintLabor.IsChecked = val6;
+                        if (settings.TryGetValue("doPrintGrossPureGoldCash", out bool val7) && doPrintGrossPureGoldCash != null) doPrintGrossPureGoldCash.IsChecked = val7;
+                        if (settings.TryGetValue("doPrintTotalPureGoldCash", out bool val8) && doPrintTotalPureGoldCash != null) doPrintTotalPureGoldCash.IsChecked = val8;
                         if (settings.TryGetValue("doPrintKarat", out bool valKarat) && doPrintKarat != null) doPrintKarat.IsChecked = valKarat;
                         if (settings.TryGetValue("doPrintPurityPercent", out bool valPurity) && doPrintPurityPercent != null) doPrintPurityPercent.IsChecked = valPurity;
-                        if (settings.TryGetValue("doPrintNotes", out bool val20)) doPrintNotes.IsChecked = val20;
+                        if (settings.TryGetValue("doPrintNotes", out bool valNotes) && doPrintNotes != null) doPrintNotes.IsChecked = valNotes;
                     }
                 }
             }
@@ -286,7 +190,7 @@ namespace InstantDealingApp
                 // Allow natural Enter key in multiline textboxes
                 if (focusedElement is TextBox tb && tb.AcceptsReturn) return;
 
-                // 1. Customer ComboBoxes (or textboxes inside them)
+                // 1. Customer ComboBox (or textboxes inside it)
                 if (focusedElement == customersTest || IsDescendantOf(focusedElement, customersTest))
                 {
                     if (!string.IsNullOrWhiteSpace(customersTest.Text))
@@ -295,28 +199,6 @@ namespace InstantDealingApp
                         AppendUniqueName(customersTest.Text);
                     }
                     totalWeightTextbox.Focus();
-                    e.Handled = true;
-                    return;
-                }
-                if (focusedElement == customers || IsDescendantOf(focusedElement, customers))
-                {
-                    if (!string.IsNullOrWhiteSpace(customers.Text))
-                    {
-                        customers.Text = CapitalizeCustomerName(customers.Text);
-                        AppendUniqueName(customers.Text);
-                    }
-                    labTextbox.Focus();
-                    e.Handled = true;
-                    return;
-                }
-                if (focusedElement == customersCash || IsDescendantOf(focusedElement, customersCash))
-                {
-                    if (!string.IsNullOrWhiteSpace(customersCash.Text))
-                    {
-                        customersCash.Text = CapitalizeCustomerName(customersCash.Text);
-                        AppendUniqueName(customersCash.Text);
-                    }
-                    cashTextbox.Focus();
                     e.Handled = true;
                     return;
                 }
@@ -349,12 +231,6 @@ namespace InstantDealingApp
                 }
                 if (focusedElement == resultTextbox)
                 {
-                    rattiInputTextbox.Focus();
-                    e.Handled = true;
-                    return;
-                }
-                if (focusedElement == rattiInputTextbox)
-                {
                     laborTextbox.Focus();
                     e.Handled = true;
                     return;
@@ -384,34 +260,6 @@ namespace InstantDealingApp
                     return;
                 }
 
-                // 4. Lab Tab Flow
-                if (focusedElement == goldRateTextbox)
-                {
-                    customers.Focus();
-                    e.Handled = true;
-                    return;
-                }
-                if (focusedElement == labTextbox)
-                {
-                    SaveButton.Focus();
-                    e.Handled = true;
-                    return;
-                }
-
-                // 5. Cash Tab Flow
-                if (focusedElement == goldRateTextboxCash)
-                {
-                    customersCash.Focus();
-                    e.Handled = true;
-                    return;
-                }
-                if (focusedElement == cashTextbox)
-                {
-                    SaveButton.Focus();
-                    e.Handled = true;
-                    return;
-                }
-
                 // General fallback navigation
                 if (focusedElement != null)
                 {
@@ -426,81 +274,29 @@ namespace InstantDealingApp
             string currentText = textBox.Text.Insert(textBox.SelectionStart, input);
             return Regex.IsMatch(currentText, @"^-?\d*\.?\d*$");
         }
-        //private bool doPrint(dynamic sender)
-        //{
-        //    switch (sender)
-        //    {
-        //        case TextBox textBox when textBox == goldRateTextbox:
-        //            return doPrintGoldRate.IsChecked ?? false;
-        //        case ComboBox comboBox when comboBox == customers:
-        //            return doPrintCustomerName.IsChecked ?? false;
-        //        case TextBox textbox when textbox == labTextbox:
-        //            return doPrintLab.IsChecked ?? false;
-        //        case TextBox textBox when textBox == cashTextbox:
-        //            return doPrintCash.IsChecked ?? false;
-        //        case TextBlock text when text == labFromCash:
-        //            return doPrintLabFromCash.IsChecked ?? false;
-        //        case TextBlock text when text == cashFromLab:
-        //            return doPrintCashFromLab.IsChecked ?? false;
-        //        case TextBox text when text == fortestTextbox:
-        //            return doPrintForTest.IsChecked ?? false;
-        //        case TextBox text when text == totalWeightTextbox:
-        //            return doPrintTotalWeight.IsChecked ?? false;
-        //        default:
-        //            return false;
-        //    }
-        //}
+
         private bool doPrint(dynamic sender)
         {
             switch (sender)
             {
-                // Gold Rate TextBoxes (all tabs)
-                case TextBox textBox when textBox == goldRateTextbox:
-                    return doPrintGoldRate.IsChecked ?? false;
-                case TextBox textBox when textBox == goldRateTextboxCash:
-                    return doPrintGoldRateCash.IsChecked ?? false;
                 case TextBox textBox when textBox == goldRateTextboxTest:
-                    return doPrintGoldRateTest.IsChecked ?? false;
+                    return doPrintGoldRateTest?.IsChecked ?? false;
 
-                // Customer ComboBoxes (all tabs)
-                case ComboBox comboBox when comboBox == customers:
-                    return doPrintCustomerName.IsChecked ?? false;
-                case ComboBox comboBox when comboBox == customersCash:
-                    return doPrintCustomerNameCash.IsChecked ?? false;
                 case ComboBox comboBox when comboBox == customersTest:
-                    return doPrintCustomerNameTest.IsChecked ?? false;
+                    return doPrintCustomerNameTest?.IsChecked ?? false;
 
-                // Lab specific fields (Lab tab only)
-                case TextBox textbox when textbox == labTextbox:
-                    return doPrintLab.IsChecked ?? false;
-                case TextBlock text when text == cashFromLab:
-                    return doPrintCashFromLab.IsChecked ?? false;
-
-                // Cash specific fields (Cash tab only)
-                case TextBox textBox when textBox == cashTextbox:
-                    return doPrintCash.IsChecked ?? false;
-                case TextBlock text when text == labFromCash:
-                    return doPrintLabFromCash.IsChecked ?? false;
-
-                // Test specific fields (Test tab only)
                 case TextBox text when text == totalWeightTextbox:
-                    return doPrintTotalWeight.IsChecked ?? false;
+                    return doPrintTotalWeight?.IsChecked ?? false;
                 case TextBox text when text == resultTextbox:
-                    return doPrintResult.IsChecked ?? false;
+                    return doPrintResult?.IsChecked ?? false;
                 case TextBox text when text == pureGoldTextbox:
-                    return doPrintPureGold.IsChecked ?? false;
-                case TextBox text when text == rattiInputTextbox:
-                    return doPrintRattiInput.IsChecked ?? false;
+                    return doPrintPureGold?.IsChecked ?? false;
                 case TextBox text when text == laborTextbox:
-                    return doPrintLabor.IsChecked ?? false;
-                case TextBox text when text == rattiGoldWeightTextbox:
-                    return doPrintRattiGoldWeight.IsChecked ?? false;
+                    return doPrintLabor?.IsChecked ?? false;
+                case TextBox text when text == grossPureGoldCashTextbox:
+                    return doPrintGrossPureGoldCash?.IsChecked ?? false;
                 case TextBox text when text == totalPureGoldCashTextbox:
-                    return doPrintTotalPureGoldCash.IsChecked ?? false;
-                case TextBox text when text == grossRattiCashTextbox:
-                    return doPrintGrossRattiCash.IsChecked ?? false;
-                case TextBox text when text == netRattiCashTextbox:
-                    return doPrintNetRattiCash.IsChecked ?? false;
+                    return doPrintTotalPureGoldCash?.IsChecked ?? false;
                 case TextBox text when text == karatInputTextbox:
                     return doPrintKarat?.IsChecked ?? false;
                 case TextBox text when text == purityPercentTextbox:
@@ -572,65 +368,26 @@ namespace InstantDealingApp
         {
             try
             {
-                bool isTestTab = mainTabControl.SelectedItem == testTab;
-                bool isLabTab = mainTabControl.SelectedItem == labTab;
-                bool isCashTab = mainTabControl.SelectedItem == cashTab;
-
                 PrintRecord record = new PrintRecord
                 {
                     Timestamp = DateTime.Now
                 };
 
-                if (isTestTab)
-                {
-                    record.TabType = "Test";
-                    record.CustomerName = CapitalizeCustomerName(customersTest?.Text ?? "");
-                    record.TotalWeight = NumberFormattingHelper.GetCleanDouble(totalWeightTextbox);
-                    record.PureGold = NumberFormattingHelper.GetCleanDouble(pureGoldTextbox);
-                    record.Labor = NumberFormattingHelper.GetCleanDouble(laborTextbox);
-                    record.GoldRate = NumberFormattingHelper.GetCleanDouble(goldRateTextboxTest);
+                record.TabType = "Test";
+                record.CustomerName = CapitalizeCustomerName(customersTest?.Text ?? "");
+                record.TotalWeight = NumberFormattingHelper.GetCleanDouble(totalWeightTextbox);
+                record.PureGold = NumberFormattingHelper.GetCleanDouble(pureGoldTextbox);
+                record.Labor = NumberFormattingHelper.GetCleanDouble(laborTextbox);
+                record.GoldRate = NumberFormattingHelper.GetCleanDouble(goldRateTextboxTest);
+                record.Ratti = NumberFormattingHelper.GetCleanDouble(resultTextbox);
+                record.Karat = NumberFormattingHelper.GetCleanDouble(karatInputTextbox);
+                record.PurityPercent = NumberFormattingHelper.GetCleanDouble(purityPercentTextbox);
 
-                    double resRatti = NumberFormattingHelper.GetCleanDouble(resultTextbox);
-                    if (resRatti > 0)
-                    {
-                        record.Ratti = resRatti;
-                    }
-                    else
-                    {
-                        record.Ratti = NumberFormattingHelper.GetCleanDouble(rattiInputTextbox);
-                    }
+                double totalCash = NumberFormattingHelper.GetCleanDouble(totalPureGoldCashTextbox);
+                double grossCash = NumberFormattingHelper.GetCleanDouble(grossPureGoldCashTextbox);
+                record.Cash = totalCash > 0 ? totalCash : grossCash;
 
-                    record.Karat = NumberFormattingHelper.GetCleanDouble(karatInputTextbox);
-                    record.PurityPercent = NumberFormattingHelper.GetCleanDouble(purityPercentTextbox);
-
-                    double netCash = NumberFormattingHelper.GetCleanDouble(netRattiCashTextbox);
-                    double pureCash = NumberFormattingHelper.GetCleanDouble(totalPureGoldCashTextbox);
-                    record.Cash = netCash > 0 ? netCash : pureCash;
-
-                    record.Notes = notesTextboxTest?.Text?.Trim() ?? "";
-                }
-                else if (isLabTab)
-                {
-                    record.TabType = "Lab";
-                    record.CustomerName = CapitalizeCustomerName(customers?.Text ?? "");
-                    record.GoldRate = NumberFormattingHelper.GetCleanDouble(goldRateTextbox);
-                    record.TotalWeight = NumberFormattingHelper.GetCleanDouble(labTextbox);
-                    double.TryParse(cashFromLab?.Text?.Replace(",", "").Replace(" ", "") ?? "0", out double cashLabVal);
-                    record.Cash = cashLabVal;
-                    record.Status = getGoldTransctionStatus();
-                    record.Notes = record.Status;
-                }
-                else if (isCashTab)
-                {
-                    record.TabType = "Cash";
-                    record.CustomerName = CapitalizeCustomerName(customersCash?.Text ?? "");
-                    record.GoldRate = NumberFormattingHelper.GetCleanDouble(goldRateTextboxCash);
-                    record.Cash = NumberFormattingHelper.GetCleanDouble(cashTextbox);
-                    double.TryParse(labFromCash?.Text?.Replace(",", "").Replace(" ", "") ?? "0", out double labCashVal);
-                    record.TotalWeight = labCashVal;
-                    record.Status = getCashTransctionStatus();
-                    record.Notes = record.Status;
-                }
+                record.Notes = notesTextboxTest?.Text?.Trim() ?? "";
 
                 SavePrintRecord(record);
             }
@@ -1083,14 +840,7 @@ namespace InstantDealingApp
 
         private void goldRateTextbox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            updateLabFromCash();
-            updateCashFromLab();
             updateTestCalculations();
-        }
-
-        private void cashTextbox_TextChanged_1(object sender, TextChangedEventArgs e)
-        {
-            updateLabFromCash();
         }
 
         private void testTabInputs_TextChanged(object sender, TextChangedEventArgs e)
@@ -1132,19 +882,16 @@ namespace InstantDealingApp
 
         private void updateTestCalculations()
         {
-            if (pureGoldTextbox == null || rattiInputTextbox == null || laborTextbox == null ||
-                rattiGoldWeightTextbox == null || totalPureGoldCashTextbox == null ||
-                grossRattiCashTextbox == null || netRattiCashTextbox == null) return;
+            if (pureGoldTextbox == null || laborTextbox == null ||
+                grossPureGoldCashTextbox == null || totalPureGoldCashTextbox == null) return;
 
             try
             {
                 double goldRate = 0;
                 double totalWeight = 0;
                 double resultRatti = 0;
-                double selectedRatti = 0.5;
 
-                string rateText = !string.IsNullOrWhiteSpace(goldRateTextboxTest?.Text) ? goldRateTextboxTest.Text :
-                                  !string.IsNullOrWhiteSpace(goldRateTextbox?.Text) ? goldRateTextbox.Text : "0";
+                string rateText = !string.IsNullOrWhiteSpace(goldRateTextboxTest?.Text) ? goldRateTextboxTest.Text : "0";
                 double.TryParse(rateText.Replace(",", "").Replace(" ", ""), out goldRate);
 
                 if (totalWeightTextbox != null)
@@ -1181,37 +928,6 @@ namespace InstantDealingApp
                         {
                             _isCalculatingRatti = false;
                         }
-                    }
-                }
-
-                if (rattiInputTextbox != null && !string.IsNullOrWhiteSpace(rattiInputTextbox.Text))
-                {
-                    if (double.TryParse(rattiInputTextbox.Text.Replace(",", "").Replace(" ", ""), out double inputRatti) && inputRatti >= 0)
-                    {
-                        selectedRatti = inputRatti;
-                    }
-                }
-
-                // Update Labels for Box 1, Box 3, Box 4 dynamically
-                if (lblBox1Eng != null && lblBox1Urdu != null && lblBox3Eng != null && lblBox3Urdu != null && lblBox4Eng != null && lblBox4Urdu != null)
-                {
-                    if (Math.Abs(selectedRatti - 0.5) < 0.001)
-                    {
-                        lblBox1Eng.Text = "1/2 Ratti Gold Wt / ";
-                        lblBox1Urdu.Text = "آدھی رتی سونا وزن";
-                        lblBox3Eng.Text = "Gross 1/2 Ratti Cash / ";
-                        lblBox3Urdu.Text = "رتی کیش - بغیر مزدوری";
-                        lblBox4Eng.Text = "Net 1/2 Ratti Cash / ";
-                        lblBox4Urdu.Text = "رتی کیش - بمعہ مزدوری";
-                    }
-                    else
-                    {
-                        lblBox1Eng.Text = $"{selectedRatti} Ratti Gold Wt / ";
-                        lblBox1Urdu.Text = $"{selectedRatti} رتی سونا وزن";
-                        lblBox3Eng.Text = $"Gross {selectedRatti} Ratti Cash / ";
-                        lblBox3Urdu.Text = $"{selectedRatti} رتی کیش - بغیر مزدوری";
-                        lblBox4Eng.Text = $"Net {selectedRatti} Ratti Cash / ";
-                        lblBox4Urdu.Text = $"{selectedRatti} رتی کیش - بمعہ مزدوری";
                     }
                 }
 
@@ -1262,78 +978,23 @@ namespace InstantDealingApp
                 // 3. Rate per Gram (1 Tola = 11.664 grams)
                 double ratePerGram = goldRate > 0 ? (goldRate / 11.664) : 0;
 
-                // 4. Box 1: Ratti Pure Gold Weight (Grams)
-                double rattiGoldWeight = pureGold * (selectedRatti / 96.0);
-                rattiGoldWeightTextbox.Text = rattiGoldWeight.ToString("F3");
-
-                // 5. Box 2: Total Pure Gold Cash Amount (after subtracting labor charges)
+                // 4. Box 1: Cash Without Labor (Gross Cash)
                 double grossPureGoldCash = pureGold * ratePerGram;
+                grossPureGoldCashTextbox.Text = grossPureGoldCash.ToString("N0");
+
+                // 5. Box 2: Cash With Labor (Total Pure Gold Cash after subtracting labor charges)
                 double totalPureGoldCash = grossPureGoldCash > 0 ? Math.Max(0, grossPureGoldCash - laborCharges) : 0;
                 totalPureGoldCashTextbox.Text = totalPureGoldCash.ToString("N0");
-
-                // 6. Box 3: Gross Ratti Cash (without labor)
-                double grossRattiCash = rattiGoldWeight * ratePerGram;
-                grossRattiCashTextbox.Text = grossRattiCash.ToString("N0");
-
-                // 7. Box 4: Net Ratti Cash (after labor)
-                double netRattiCash = grossRattiCash > 0 ? Math.Max(0, grossRattiCash - laborCharges) : 0;
-                netRattiCashTextbox.Text = netRattiCash.ToString("N0");
             }
             catch
             {
                 pureGoldTextbox.Text = "0";
                 laborTextbox.Text = "0";
-                rattiGoldWeightTextbox.Text = "0.000";
+                grossPureGoldCashTextbox.Text = "0";
                 totalPureGoldCashTextbox.Text = "0";
-                grossRattiCashTextbox.Text = "0";
-                netRattiCashTextbox.Text = "0";
             }
         }
 
-        private void updateLabFromCash()
-        {
-            if (labFromCash == null) return;
-            if (goldRateTextbox.Text == null || goldRateTextbox.Text == "")
-            {
-                labFromCash.Text = "0";
-                return;
-            }
-            try
-            {
-                double cash = Double.Parse(cashTextbox.Text);
-                double goldRate = Double.Parse(goldRateTextbox.Text);
-                double ratePerGram = goldRate / 11.664; // Rate per gram
-                double goldInGrams = cash / ratePerGram; // Total gold in grams for the cash amount
-                labFromCash.Text = goldInGrams.ToString("F2"); // Display result
-
-            }
-            catch (Exception error)
-            {
-                error.Source = "Error";
-            }
-        }
-        private void updateCashFromLab()
-        {
-            if (cashFromLab == null) return;
-            if (goldRateTextbox.Text == null || goldRateTextbox.Text == "")
-            {
-                cashFromLab.Text = "0";
-                return;
-            }
-            try
-            {
-                double lab = Double.Parse(labTextbox.Text);
-                double goldRate = Double.Parse(goldRateTextbox.Text);
-                double ratePerGram = goldRate / 11.664;
-                cashFromLab.Text = (ratePerGram * lab).ToString("N0");
-            }
-            catch (Exception error)
-            {
-                error.Source = "Error";
-            }
-        }
-
-       
         private void clearOnFocus(object sender, RoutedEventArgs e)
         {
             TextBox textBox = (TextBox)sender;
@@ -1357,40 +1018,18 @@ namespace InstantDealingApp
             if (doPrintResult != null) doPrintResult.IsChecked = isChecked;
             if (doPrintPureGold != null) doPrintPureGold.IsChecked = isChecked;
             if (doPrintLabor != null) doPrintLabor.IsChecked = isChecked;
-            if (doPrintRattiInput != null) doPrintRattiInput.IsChecked = isChecked;
-            if (doPrintRattiGoldWeight != null) doPrintRattiGoldWeight.IsChecked = isChecked;
+            if (doPrintGrossPureGoldCash != null) doPrintGrossPureGoldCash.IsChecked = isChecked;
             if (doPrintTotalPureGoldCash != null) doPrintTotalPureGoldCash.IsChecked = isChecked;
-            if (doPrintGrossRattiCash != null) doPrintGrossRattiCash.IsChecked = isChecked;
-            if (doPrintNetRattiCash != null) doPrintNetRattiCash.IsChecked = isChecked;
             if (doPrintKarat != null) doPrintKarat.IsChecked = isChecked;
             if (doPrintPurityPercent != null) doPrintPurityPercent.IsChecked = isChecked;
             if (doPrintGoldRateTest != null) doPrintGoldRateTest.IsChecked = isChecked;
             if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = isChecked;
             if (doPrintNotes != null) doPrintNotes.IsChecked = isChecked;
-
-            // Lab Tab CheckBoxes
-            if (doPrintLab != null) doPrintLab.IsChecked = isChecked;
-            if (doPrintCashFromLab != null) doPrintCashFromLab.IsChecked = isChecked;
-            if (doPrintGoldRate != null) doPrintGoldRate.IsChecked = isChecked;
-            if (doPrintCustomerName != null) doPrintCustomerName.IsChecked = isChecked;
-
-            // Cash Tab CheckBoxes
-            if (doPrintCash != null) doPrintCash.IsChecked = isChecked;
-            if (doPrintLabFromCash != null) doPrintLabFromCash.IsChecked = isChecked;
-            if (doPrintGoldRateCash != null) doPrintGoldRateCash.IsChecked = isChecked;
-            if (doPrintCustomerNameCash != null) doPrintCustomerNameCash.IsChecked = isChecked;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if ((doPrint(cashFromLab)  && !isCorrectTransactionSelected(TrasactionType.labTransaction)) || ( doPrint(labFromCash) && !isCorrectTransactionSelected(TrasactionType.cashTrasaction)))
-            {
-                MessageBox.Show("Please select transaction type");
-                return;
-            }
             PrintDialog printDlg = new PrintDialog();
-
-
 
             FlowDocument doc = CreateFlowDocument(DateTime.Now);
             doc.Name = "FlowDoc";
@@ -1399,55 +1038,14 @@ namespace InstantDealingApp
             dwin.Width = 288;
             //dwin.Show();
 
-
             bool? print = printDlg.ShowDialog();
-            if (print != null)
+            if (print != null && (print ?? false))
             {
-                if ((print ?? false))
-                {
-                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
-                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
-                    RecordCurrentPrint();
-                }
-
-            }
-
-        }
-        public enum TrasactionType
-        {
-            labTransaction,
-            cashTrasaction
-        }
-        public bool isCorrectTransactionSelected(TrasactionType trasactionType)
-        {
-            if (trasactionType == TrasactionType.labTransaction) {
-                return ((giveGold.Visibility == Visibility.Visible) || (takeGold.Visibility == Visibility.Visible));
-            }
-            else
-            {
-                return ((giveMoney.Visibility == Visibility.Visible) || (takeMoney.Visibility == Visibility.Visible));
+                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
+                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
+                RecordCurrentPrint();
             }
         }
-        public string getGoldTransctionStatus()
-        {
-            if (!doPrint(labTextbox)) return "";
-            if (giveGold.Visibility == Visibility.Visible ) return "سونا دے رہے ہیں";
-            if (takeGold.Visibility == Visibility.Visible) return "سونا لے رہے ہیں";
-            
-            return "-";
-        }
-        public string getCashTransctionStatus()
-        {
-            if (!doPrint(cashTextbox)) return "";
-            if (giveMoney.Visibility == Visibility.Visible) return "پیسے دے رہے ہیں";
-            if (takeMoney.Visibility == Visibility.Visible) return "پیسے لے رہے ہیں";
-            return "-";
-        }
-        public bool isGoldRateNull()
-        {
-            return goldRateTextbox == null || goldRateTextbox.Text == null || goldRateTextbox.Text == "";
-        }
-        
 
         public FlowDocument CreateFlowDocument(DateTime date)
         {
@@ -1483,18 +1081,10 @@ namespace InstantDealingApp
             };
             flowDoc.Blocks.Add(dateParagraph);
 
-            bool isTestTab = (mainTabControl.SelectedItem == testTab);
-            bool isLabTab = (mainTabControl.SelectedItem == labTab);
-            bool isCashTab = (mainTabControl.SelectedItem == cashTab);
-
-            // Customer Information (only for active selected tab)
+            // Customer Information
             string customerName = "";
-            if (isTestTab && doPrint(customersTest) && !string.IsNullOrWhiteSpace(customersTest?.Text))
+            if (doPrint(customersTest) && !string.IsNullOrWhiteSpace(customersTest?.Text))
                 customerName = customersTest.Text;
-            else if (isLabTab && doPrint(customers) && !string.IsNullOrWhiteSpace(customers?.Text))
-                customerName = customers.Text;
-            else if (isCashTab && doPrint(customersCash) && !string.IsNullOrWhiteSpace(customersCash?.Text))
-                customerName = customersCash.Text;
 
             if (!string.IsNullOrWhiteSpace(customerName))
             {
@@ -1509,130 +1099,15 @@ namespace InstantDealingApp
 
             bool hasTransactionData = false;
 
-            // Lab Transaction Section (ONLY if Lab tab is active)
-            if (isLabTab && doPrint(labTextbox) && !string.IsNullOrWhiteSpace(labTextbox?.Text) && labTextbox.Text != "0")
-            {
-                if (!hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
-                hasTransactionData = true;
-
-                // Section Header with underline for better distinction
-                Paragraph labHeader = new Paragraph();
-                labHeader.Inlines.Add(new Underline(new Bold(new Run("LAB TRANSACTION"))));
-                labHeader.TextAlignment = TextAlignment.Center;
-                labHeader.FontSize = 18;
-                labHeader.Margin = new Thickness(0, 8, 0, 5);
-                labHeader.Foreground = Brushes.Black;
-                flowDoc.Blocks.Add(labHeader);
-
-                // Gold Transaction Status (if available)
-                string goldStatus = getGoldTransctionStatus();
-                if (!string.IsNullOrWhiteSpace(goldStatus))
-                {
-                    Paragraph goldStatusParagraph = new Paragraph(new Run(goldStatus))
-                    {
-                        FontFamily = FontHelper.GetUrduFont(),
-                        TextAlignment = TextAlignment.Center,
-                        FontSize = 20,
-                        FontWeight = FontWeights.SemiBold,
-                        Margin = new Thickness(0, 0, 0, 8),
-                        Foreground = Brushes.Black
-                    };
-                    flowDoc.Blocks.Add(goldStatusParagraph);
-                }
-
-                // Lab details
-                Table labTable = new Table() { CellSpacing = 2 };
-                labTable.Columns.Add(new TableColumn() { Width = new GridLength(120) });
-                labTable.Columns.Add(new TableColumn() { Width = new GridLength(120) });
-
-                TableRowGroup labRowGroup = new TableRowGroup();
-
-                TableRow labRow = new TableRow();
-                labRow.Cells.Add(new TableCell(new Paragraph(new Run("Lab Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                labRow.Cells.Add(new TableCell(new Paragraph(new Run($"{labTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
-                labRowGroup.Rows.Add(labRow);
-
-                // Add cash from lab only if checkbox is checked
-                if (doPrint(cashFromLab) && !string.IsNullOrWhiteSpace(cashFromLab?.Text) && cashFromLab.Text != "0")
-                {
-                    TableRow cashFromLabRow = new TableRow();
-                    cashFromLabRow.Cells.Add(new TableCell(new Paragraph(new Run("Cash Value:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    cashFromLabRow.Cells.Add(new TableCell(new Paragraph(new Run(cashFromLab.Text)) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
-                    labRowGroup.Rows.Add(cashFromLabRow);
-                }
-
-                labTable.RowGroups.Add(labRowGroup);
-                flowDoc.Blocks.Add(labTable);
-            }
-
-            // Cash Transaction Section (ONLY if Cash tab is active)
-            if (isCashTab && doPrint(cashTextbox) && !string.IsNullOrWhiteSpace(cashTextbox?.Text) && cashTextbox.Text != "0")
-            {
-                if (!hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
-                else flowDoc.Blocks.Add(CreateSeparator()); // Add separator between sections
-                hasTransactionData = true;
-
-                // Section Header with underline for better distinction
-                Paragraph cashHeader = new Paragraph();
-                cashHeader.Inlines.Add(new Underline(new Bold(new Run("CASH TRANSACTION"))));
-                cashHeader.TextAlignment = TextAlignment.Center;
-                cashHeader.FontSize = 18;
-                cashHeader.Margin = new Thickness(0, 8, 0, 5);
-                cashHeader.Foreground = Brushes.Black;
-                flowDoc.Blocks.Add(cashHeader);
-
-                // Cash Transaction Status (if available)
-                string cashStatus = getCashTransctionStatus();
-                if (!string.IsNullOrWhiteSpace(cashStatus))
-                {
-                    Paragraph cashStatusParagraph = new Paragraph(new Run(cashStatus))
-                    {
-                        FontFamily = FontHelper.GetUrduFont(),
-                        TextAlignment = TextAlignment.Center,
-                        FontSize = 20,
-                        FontWeight = FontWeights.SemiBold,
-                        Margin = new Thickness(0, 0, 0, 8),
-                        Foreground = Brushes.Black
-                    };
-                    flowDoc.Blocks.Add(cashStatusParagraph);
-                }
-
-                // Cash details
-                Table cashTable = new Table() { CellSpacing = 2 };
-                cashTable.Columns.Add(new TableColumn() { Width = new GridLength(120) });
-                cashTable.Columns.Add(new TableColumn() { Width = new GridLength(120) });
-
-                TableRowGroup cashRowGroup = new TableRowGroup();
-
-                TableRow cashRow = new TableRow();
-                cashRow.Cells.Add(new TableCell(new Paragraph(new Run("Cash Amount:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                cashRow.Cells.Add(new TableCell(new Paragraph(new Run(cashTextbox.Text)) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
-                cashRowGroup.Rows.Add(cashRow);
-
-                // Add lab from cash only if checkbox is checked
-                if (doPrint(labFromCash) && !string.IsNullOrWhiteSpace(labFromCash?.Text) && labFromCash.Text != "0")
-                {
-                    TableRow labFromCashRow = new TableRow();
-                    labFromCashRow.Cells.Add(new TableCell(new Paragraph(new Run("Lab Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    labFromCashRow.Cells.Add(new TableCell(new Paragraph(new Run($"{labFromCash.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
-                    cashRowGroup.Rows.Add(labFromCashRow);
-                }
-
-                cashTable.RowGroups.Add(cashRowGroup);
-                flowDoc.Blocks.Add(cashTable);
-            }
-
-            // Test Transaction Section (ONLY if Test tab is active)
-            bool shouldPrintTestSection = isTestTab && (doPrint(totalWeightTextbox) || 
+            // Test Transaction Section
+            bool shouldPrintTestSection = doPrint(totalWeightTextbox) || 
                                          doPrint(resultTextbox) || 
                                          doPrint(pureGoldTextbox) || 
                                          doPrint(laborTextbox) || 
-                                         doPrint(rattiGoldWeightTextbox) || 
+                                         doPrint(grossPureGoldCashTextbox) || 
                                          doPrint(totalPureGoldCashTextbox) || 
-                                         doPrint(grossRattiCashTextbox) || 
-                                         doPrint(netRattiCashTextbox) ||
                                          doPrint(karatInputTextbox) ||
-                                         doPrint(purityPercentTextbox));
+                                         doPrint(purityPercentTextbox);
 
             if (shouldPrintTestSection)
             {
@@ -1701,42 +1176,19 @@ namespace InstantDealingApp
                     testRowGroup.Rows.Add(row);
                 }
 
-                double printRattiVal = 0.5;
-                if (rattiInputTextbox != null && !string.IsNullOrWhiteSpace(rattiInputTextbox.Text) && double.TryParse(rattiInputTextbox.Text.Replace(",", "").Replace(" ", ""), out double rVal) && rVal >= 0)
-                {
-                    printRattiVal = rVal;
-                }
-                string rattiTitle = Math.Abs(printRattiVal - 0.5) < 0.001 ? "1/2 Ratti" : $"{printRattiVal} Ratti";
-
-                if (doPrint(rattiGoldWeightTextbox) && !string.IsNullOrWhiteSpace(rattiGoldWeightTextbox?.Text) && rattiGoldWeightTextbox.Text != "0")
+                if (doPrint(grossPureGoldCashTextbox) && !string.IsNullOrWhiteSpace(grossPureGoldCashTextbox?.Text) && grossPureGoldCashTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{rattiTitle} Gold Wt:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{rattiGoldWeightTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash W/O Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {grossPureGoldCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(totalPureGoldCashTextbox) && !string.IsNullOrWhiteSpace(totalPureGoldCashTextbox?.Text) && totalPureGoldCashTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Total Pure Cash:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash W/ Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
                     row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalPureGoldCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
-                    testRowGroup.Rows.Add(row);
-                }
-
-                if (doPrint(grossRattiCashTextbox) && !string.IsNullOrWhiteSpace(grossRattiCashTextbox?.Text) && grossRattiCashTextbox.Text != "0")
-                {
-                    TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Gross {rattiTitle} Cash:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {grossRattiCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
-                    testRowGroup.Rows.Add(row);
-                }
-
-                if (doPrint(netRattiCashTextbox) && !string.IsNullOrWhiteSpace(netRattiCashTextbox?.Text) && netRattiCashTextbox.Text != "0")
-                {
-                    TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Net {rattiTitle} Cash:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {netRattiCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
@@ -1744,23 +1196,17 @@ namespace InstantDealingApp
                 flowDoc.Blocks.Add(testTable);
             }
 
-            // Gold Rate Section (ONLY for active selected tab)
-            bool shouldPrintGoldRate = (isTestTab && doPrint(goldRateTextboxTest)) ||
-                                       (isLabTab && doPrint(goldRateTextbox)) ||
-                                       (isCashTab && doPrint(goldRateTextboxCash));
-
-            if (shouldPrintGoldRate)
+            // Gold Rate Section
+            if (doPrint(goldRateTextboxTest))
             {
-                string finalRateStr = isTestTab ? goldRateTextboxTest?.Text :
-                                      isLabTab ? goldRateTextbox?.Text :
-                                      goldRateTextboxCash?.Text ?? "";
+                string finalRateStr = goldRateTextboxTest?.Text ?? "";
 
                 if (!string.IsNullOrWhiteSpace(finalRateStr) && finalRateStr != "0")
                 {
                     if (hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
 
                     double diff = 0;
-                    if (isTestTab && goldRateDiffTextbox != null && !string.IsNullOrWhiteSpace(goldRateDiffTextbox.Text))
+                    if (goldRateDiffTextbox != null && !string.IsNullOrWhiteSpace(goldRateDiffTextbox.Text))
                     {
                         double.TryParse(goldRateDiffTextbox.Text.Replace(",", "").Replace(" ", ""), out diff);
                     }
@@ -1791,8 +1237,8 @@ namespace InstantDealingApp
                 }
             }
 
-            // Notes Section (ONLY for Test tab)
-            if (isTestTab && doPrint(notesTextboxTest) && !string.IsNullOrWhiteSpace(notesTextboxTest?.Text))
+            // Notes Section
+            if (doPrint(notesTextboxTest) && !string.IsNullOrWhiteSpace(notesTextboxTest?.Text))
             {
                 flowDoc.Blocks.Add(CreateSeparator());
 
@@ -1837,193 +1283,6 @@ namespace InstantDealingApp
             };
         }
 
-      
-
-        // Helper Method to Create Separator
-        //private BlockUIContainer CreateSeparator()
-        //{
-        //    var separator = new Rectangle
-        //    {
-        //        Height = 1,
-        //        Fill = Brushes.Gray,
-        //        Margin = new Thickness(0, 5, 0, 5)
-        //    };
-        //    return new BlockUIContainer(separator);
-        //}
-
-
-        //public FlowDocument CreateFlowDocument(DateTime date)
-        //{
-        //    FlowDocument flowDoc = new FlowDocument();
-
-        //    // Set page width and padding
-        //    int pageWidth = 288;
-        //    flowDoc.PageWidth = pageWidth;
-        //    flowDoc.PagePadding = new Thickness(10);
-        //    flowDoc.FontFamily = new FontFamily("Segoe UI");
-        //    flowDoc.FontSize = 18; 
-
-
-        //    //flowDoc.Blocks.Add(CreateSeparator());
-
-
-        //    Paragraph title = new Paragraph(new Run("MW Gold Lab"));
-        //    title.TextAlignment = TextAlignment.Center;
-        //    title.FontSize = 24;
-        //    title.FontWeight = FontWeights.Bold;
-        //    title.Margin= new Thickness(0,0,0,10);
-        //    flowDoc.Blocks.Add(title);
-
-
-        //    Paragraph subheading = new Paragraph(new Run(DateTime.Now.ToString("G")));
-        //    subheading.TextAlignment = TextAlignment.Center;
-        //    subheading.FontSize = 18;
-        //    subheading.FontStyle = FontStyles.Italic;
-        //    flowDoc.Blocks.Add(subheading);
-
-
-        //    //flowDoc.Blocks.Add(CreateSeparator());
-        //    //flowDoc.Blocks.Add(new Paragraph(new Run("\n")));
-
-
-        //    string? goldrate = goldRateTextbox.Text;
-        //    string? lab = labTextbox.Text;
-        //    string? cashLab = cashFromLab.Text;
-        //    string? cash = cashTextbox.Text;
-        //    string? labCash = labFromCash.Text;
-
-        //    //var fontUri = new Uri("pack://application:,,,/InstantDealingApp;component/font/#Alvi Nastaleeq");
-
-        //    //Paragraph status = new Paragraph(new Run(getCurrentTransctionStatus()));
-        //    //status.FontFamily = new FontFamily(fontUri, "Alvi Nastaleeq");
-
-        //    //status.TextAlignment = TextAlignment.Center; status.FontSize = 18;
-        //    //status.FontWeight = FontWeights.Bold;
-        //    //flowDoc.Blocks.Add(status);
-        //    Paragraph status = new Paragraph(new Run(getGoldTransctionStatus()));
-        //    status.TextAlignment = TextAlignment.Center;
-        //    status.FontSize = 18;
-        //    status.FontWeight = FontWeights.Bold;
-        //    //flowDoc.Blocks.Add(CreateSeparator());
-
-        //    flowDoc.Blocks.Add(status);
-
-        //    Paragraph status2 = new Paragraph(new Run(getCashTransctionStatus()));
-        //    status2.TextAlignment = TextAlignment.Center;
-        //    status2.FontSize = 18;
-        //    status2.FontWeight = FontWeights.Bold;
-        //    //flowDoc.Blocks.Add(CreateSeparator());
-
-        //    flowDoc.Blocks.Add(status);
-        //    flowDoc.Blocks.Add(status2);
-        //    //flowDoc.Blocks.Add(CreateSeparator());
-        //    //flowDoc.Blocks.Add(new Paragraph(new Run("\n")));
-
-
-
-        //    if (doPrint(goldRateTextbox))
-        //    {
-        //        //Paragraph goldRateParagraph = new Paragraph(new Run("Gold Rate: " + goldrate));
-        //        //goldRateParagraph.TextAlignment = TextAlignment.Left;
-        //        //goldRateParagraph.FontSize = 18;
-        //        //goldRateParagraph.FontWeight = FontWeights.Bold;
-        //        //goldRateParagraph.Margin = new Thickness(10, 30, 0, 30);
-
-        //        //// Add the total paragraph to the flow document
-        //        //flowDoc.Blocks.Add(goldRateParagraph);
-
-        //        Paragraph goldRateParagraph = new Paragraph();
-        //        goldRateParagraph.Inlines.Add(new Run("Gold Rate: "));
-        //        goldRateParagraph.Inlines.Add(new Bold(new Run(goldrate))); // Example rate
-        //        flowDoc.Blocks.Add(goldRateParagraph);
-
-        //    }
-        //    if (doPrint(customers))
-        //    {
-        //        //Paragraph goldRateParagraph = new Paragraph(new Run("Customer: " + customers.Text));
-        //        //goldRateParagraph.TextAlignment = TextAlignment.Left;
-        //        //goldRateParagraph.FontSize = 18;
-        //        //goldRateParagraph.FontWeight = FontWeights.Bold;
-        //        //goldRateParagraph.Margin = new Thickness(10, 30, 0, 30);
-
-        //        //// Add the total paragraph to the flow document
-        //        //flowDoc.Blocks.Add(goldRateParagraph);
-        //        Paragraph customerParagraph = new Paragraph();
-        //        customerParagraph.Inlines.Add(new Run("Customer: "));
-        //        customerParagraph.Inlines.Add(new Bold(new Run(customers.Text))); // Example customer name
-        //        flowDoc.Blocks.Add(customerParagraph);
-
-        //        flowDoc.Blocks.Add(new Paragraph(new Run("\n")));
-
-        //    }
-        //    //if (doPrint(labTextbox) && isGoldRateNull())
-        //    if (doPrint(labTextbox) && !doPrint(cashFromLab))
-        //    {
-        //        //Paragraph goldRateParagraph = new Paragraph();
-        //        //goldRateParagraph.Inlines.Add(new Run("Lab:"));
-        //        //goldRateParagraph.FontFamily = new FontFamily("Times New Roman");
-        //        //goldRateParagraph.Inlines.Add(new Run("\t" + (lab ?? "-") + "g"));
-        //        //goldRateParagraph.TextAlignment = TextAlignment.Left;
-
-        //        //goldRateParagraph.FontSize = 16;
-
-        //        //goldRateParagraph.Margin = new Thickness(10, 10, 0, 10);
-
-        //        //// Add the total paragraph to the flow document
-        //        //flowDoc.Blocks.Add(goldRateParagraph);
-        //        Paragraph labCashParagraph = new Paragraph();
-        //        labCashParagraph.Inlines.Add(new Run("Lab: " + lab ));
-        //        flowDoc.Blocks.Add(labCashParagraph);
-        //    }
-        //    //if (doPrint(cashFromLab) && !isGoldRateNull())
-        //    if (doPrint(cashFromLab))
-        //    {
-        //        Paragraph labCashParagraph = new Paragraph();
-        //        labCashParagraph.Inlines.Add(new Run("Lab: " + lab + "g \nCash: " + cashLab));
-        //        labCashParagraph.FontWeight = FontWeights.SemiBold;
-
-        //        flowDoc.Blocks.Add(labCashParagraph);
-        //    }
-        //    //if (doPrint(cashTextbox) && isGoldRateNull())
-        //    if (doPrint(cashTextbox) && !doPrint(labFromCash))
-        //    {
-        //        Paragraph labCashParagraph = new Paragraph();
-        //        labCashParagraph.Inlines.Add(new Run("Cash: " + cash));
-        //        flowDoc.Blocks.Add(labCashParagraph);
-        //    }
-        //    //if (doPrint(labFromCash) && !isGoldRateNull())
-        //    if (doPrint(labFromCash))
-        //    {
-        //        Paragraph labCashParagraph = new Paragraph();
-        //        labCashParagraph.Inlines.Add(new Run("Lab: " + labCash + "g \nCash: " + cash));
-        //        labCashParagraph.FontWeight = FontWeights.SemiBold;
-        //        flowDoc.Blocks.Add(labCashParagraph);
-        //    }
-        //    if (doPrint(fortestTextbox))
-        //    {
-        //        Paragraph labCashParagraph = new Paragraph();
-        //        labCashParagraph.Inlines.Add(new Run("ForTest/Kaccha: " + fortestTextbox.Text ));
-        //        labCashParagraph.FontWeight = FontWeights.SemiBold;
-        //        flowDoc.Blocks.Add(labCashParagraph);
-        //    }if (doPrint(totalWeightTextbox))
-        //    {
-        //        Paragraph labCashParagraph = new Paragraph();
-        //        labCashParagraph.Inlines.Add(new Run("Total Weight: " + totalWeightTextbox.Text ));
-        //        labCashParagraph.FontWeight = FontWeights.SemiBold;
-        //        flowDoc.Blocks.Add(labCashParagraph);
-        //    }
-
-
-
-
-
-
-        //        //flowDoc.Blocks.Add(CreateSeparator());
-        //        //flowDoc.Blocks.Add(CreateSeparator());
-
-
-        //        return flowDoc;
-        //}
         private string CapitalizeCustomerName(string input)
         {
             if (string.IsNullOrWhiteSpace(input)) return string.Empty;
@@ -2060,9 +1319,7 @@ namespace InstantDealingApp
                     names.Add(newName);
                     jsonObject["Names"] = JArray.FromObject(names);
                     File.WriteAllText(jsonPath, jsonObject.ToString(Formatting.Indented));
-                    customers.ItemsSource = names;
-                    customersCash.ItemsSource = names;
-                    customersTest.ItemsSource = names;
+                    if (customersTest != null) customersTest.ItemsSource = names;
                 }
             }
             catch { }
@@ -2070,7 +1327,7 @@ namespace InstantDealingApp
 
         private void customersComboBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            var cb = sender as ComboBox ?? customers;
+            var cb = sender as ComboBox ?? customersTest;
             if (cb != null && !string.IsNullOrWhiteSpace(cb.Text))
             {
                 string cap = CapitalizeCustomerName(cb.Text);
@@ -2082,34 +1339,25 @@ namespace InstantDealingApp
         private void customers_GotFocus(object sender, RoutedEventArgs e)
         {
             var names = LoadCustomerNames();
-            customers.ItemsSource = names;
+            if (customersTest != null) customersTest.ItemsSource = names;
         }
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
-            goldRateTextbox.Text = "0";
-            customers.SelectedIndex = 0;
-
-            labTextbox.Text = "0";
-            cashFromLab.Text = "0";
-            giveGold.Visibility = Visibility.Hidden;
-            takeGold.Visibility = Visibility.Hidden;
-
-            cashTextbox.Text = "0";
-            labFromCash.Text = "0";
-            giveMoney.Visibility = Visibility.Hidden;
-            takeMoney.Visibility = Visibility.Hidden;
+            if (goldRateTextboxTest != null) goldRateTextboxTest.Text = "0";
+            if (customersTest != null)
+            {
+                customersTest.SelectedIndex = -1;
+                customersTest.Text = "";
+            }
 
             totalWeightTextbox.Text = "0";
             resultTextbox.Text = "0";
             pureGoldTextbox.Text = "0";
-            rattiInputTextbox.Text = "0.5";
             laborTextbox.Text = "0";
             _isLaborManuallyEdited = false;
-            rattiGoldWeightTextbox.Text = "0.000";
+            grossPureGoldCashTextbox.Text = "0";
             totalPureGoldCashTextbox.Text = "0";
-            grossRattiCashTextbox.Text = "0";
-            netRattiCashTextbox.Text = "0";
             if (notesTextboxTest != null) notesTextboxTest.Text = "";
             if (sampleWeightTextbox != null) sampleWeightTextbox.Text = "0";
             if (resultWeightTextbox != null) resultWeightTextbox.Text = "0";
@@ -2121,24 +1369,6 @@ namespace InstantDealingApp
             if (doPrintKarat != null) doPrintKarat.IsChecked = false;
             if (doPrintPurityPercent != null) doPrintPurityPercent.IsChecked = false;
             _rawBaseGoldRate = 0;
-        }
-
-        private void doPrintCash_Checked(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void doPrintCash_Click(object sender, RoutedEventArgs e)
-        {
-           doPrintLabFromCash.IsChecked = true;
-           //doPrintCashFromLab.IsChecked = false;
-           // doPrintLab.IsChecked = false;
-        }
-
-        private void doPrintLab_Click(object sender, RoutedEventArgs e)
-        {
-            //doPrintLabFromCash.IsChecked = false;//
-            doPrintCashFromLab.IsChecked = true;
-            //doPrintCash.IsChecked = false;
         }
 
         private void goldRateTextbox_LostFocus(object sender, RoutedEventArgs e)

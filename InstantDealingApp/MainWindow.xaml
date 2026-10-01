@@ -110,7 +110,6 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" MinWidth="240" MaxWidth="320" />
@@ -129,18 +128,18 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="90" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="goldRateTextboxTest" Grid.Column="0" LostFocus="goldRateTextbox_LostFocus" HorizontalAlignment="Stretch" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="{Binding ElementName=goldRateTextbox, Path=Text, Mode=TwoWay}" GotFocus="clearOnFocus" TextChanged="goldRateTextbox_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBox x:Name="goldRateTextboxTest" Grid.Column="0" LostFocus="goldRateTextbox_LostFocus" HorizontalAlignment="Stretch" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="1000" GotFocus="clearOnFocus" TextChanged="goldRateTextbox_TextChanged" TextBlock.FontSize="24"/>
                                 <TextBlock Grid.Column="1" Text="-" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Margin="6,0,6,0" Foreground="#64748B" />
                                 <TextBox x:Name="goldRateDiffTextbox" Grid.Column="2" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="goldRateDiffTextbox_TextChanged" TextBlock.FontSize="24" ToolTip="Subtracted Amount from Gold Rate" HorizontalContentAlignment="Center"/>
                             </Grid>
                             <CheckBox IsChecked="false" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintGoldRateTest" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Select Customer (Shared) -->
+                            <!-- Select Customer -->
                             <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,4,8,4">
                                 <Run Text="Select Customer / " />
                                 <Run Text="کسٹمر:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
                             </TextBlock>
-                            <ComboBox x:Name="customersTest" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="0,4,0,4" FontSize="18" Height="40" IsEditable="True" Text="{Binding ElementName=customers, Path=Text, Mode=TwoWay}" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24">
+                            <ComboBox x:Name="customersTest" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="0,4,0,4" FontSize="18" Height="40" IsEditable="True" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24">
                                 <!-- ComboBox items go here -->
                             </ComboBox>
                             <CheckBox IsChecked="true" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintCustomerNameTest" Click="PrintCheckBox_Click" IsTabStop="False"/>
@@ -169,59 +168,46 @@
                             <TextBox x:Name="pureGoldTextbox" Grid.Row="4" Grid.Column="1" FontSize="18" Height="40" Margin="0,4,0,4" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#F0F0F0" VerticalAlignment="Center" Text="0" TextBlock.FontSize="24"/>
                             <CheckBox IsChecked="true" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" x:Name="doPrintPureGold" Click="PrintCheckBox_Click" TextBlock.FontSize="24" IsTabStop="False"/>
 
-                            <!-- Dynamic Ratti Input (Row 5) -->
+                            <!-- Labor Charges (Row 5) -->
                             <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,4,8,4">
-                                <Run Text="Ratti / " />
-                                <Run Text="رتی:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                            </TextBlock>
-                            <TextBox x:Name="rattiInputTextbox" Grid.Row="5" Grid.Column="1" FontSize="18" Height="40" Margin="0,4,0,4" KeyDown="cashTextbox_KeyDown" PreviewTextInput="labTextbox_PreviewTextInput" VerticalAlignment="Center" Text="0.5" TextChanged="testTabInputs_TextChanged" GotFocus="clearOnFocus" TextBlock.FontSize="24"/>
-                            <CheckBox IsChecked="false" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" x:Name="doPrintRattiInput" Click="PrintCheckBox_Click" TextBlock.FontSize="24" IsTabStop="False"/>
-
-                            <!-- Labor Charges (Row 6) -->
-                            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,4,8,4">
                                 <Run Text="Labor Charges / " />
                                 <Run Text="مزدوری:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
                             </TextBlock>
-                            <TextBox x:Name="laborTextbox" Grid.Row="6" Grid.Column="1" FontSize="18" Height="40" Margin="0,4,0,4" KeyDown="cashTextbox_KeyDown" PreviewTextInput="labTextbox_PreviewTextInput" VerticalAlignment="Center" Text="0" TextChanged="laborTextbox_TextChanged" GotFocus="clearOnFocus" LostFocus="laborTextbox_LostFocus" TextBlock.FontSize="24"/>
-                            <CheckBox IsChecked="true" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" x:Name="doPrintLabor" Click="PrintCheckBox_Click" TextBlock.FontSize="24" IsTabStop="False"/>
+                            <TextBox x:Name="laborTextbox" Grid.Row="5" Grid.Column="1" FontSize="18" Height="40" Margin="0,4,0,4" KeyDown="cashTextbox_KeyDown" PreviewTextInput="labTextbox_PreviewTextInput" VerticalAlignment="Center" Text="0" TextChanged="laborTextbox_TextChanged" GotFocus="clearOnFocus" LostFocus="laborTextbox_LostFocus" TextBlock.FontSize="24"/>
+                            <CheckBox IsChecked="true" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" x:Name="doPrintLabor" Click="PrintCheckBox_Click" TextBlock.FontSize="24" IsTabStop="False"/>
 
-                            <!-- 2x2 Calculated Cards Section (Row 7) -->
-                            <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,15,0,5">
+                            <!-- Bottom Calculated Cards Section (Row 6): 2 Cards (Cash Without Labor & Cash With Labor) -->
+                            <Grid Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,15,0,5">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="14" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="12" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
 
-                                <!-- Box 1 (Row 0, Col 0): Ratti Gold Weight Card -->
-                                <Border Grid.Row="0" Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
+                                <!-- Box 1 (Col 0): Cash Without Labor (Gross Cash) -->
+                                <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
                                     <StackPanel>
                                         <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                            <Run x:Name="lblBox1Eng" Text="1/2 Ratti Gold Wt / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
-                                            <Run x:Name="lblBox1Urdu" Text="آدھی رتی سونا وزن" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
+                                            <Run Text="Cash Without Labor / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
+                                            <Run Text="کیش - بغیر مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
                                         </TextBlock>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBox x:Name="rattiGoldWeightTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" VerticalAlignment="Center" Text="0.000" TextAlignment="Center" TextBlock.FontSize="24"/>
-                                            <CheckBox x:Name="doPrintRattiGoldWeight" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
+                                            <TextBox x:Name="grossPureGoldCashTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" VerticalAlignment="Center" Text="0" TextAlignment="Center" TextBlock.FontSize="24"/>
+                                            <CheckBox x:Name="doPrintGrossPureGoldCash" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Box 2 (Row 0, Col 2): Total Pure Gold Cash Card -->
-                                <Border Grid.Row="0" Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
+                                <!-- Box 2 (Col 2): Cash With Labor (Total Pure Gold Cash) -->
+                                <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
                                     <StackPanel>
                                         <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                            <Run Text="Total Pure Cash / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
-                                            <Run Text="کل خالص کیش" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
+                                            <Run Text="Cash With Labor / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
+                                            <Run Text="کیش - بمعہ مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
                                         </TextBlock>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -230,42 +216,6 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBox x:Name="totalPureGoldCashTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" Foreground="#FF008A2E" FontWeight="Bold" VerticalAlignment="Center" Text="0" TextAlignment="Center" TextBlock.FontSize="24"/>
                                             <CheckBox x:Name="doPrintTotalPureGoldCash" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Box 3 (Row 2, Col 0): Gross Ratti Cash Card -->
-                                <Border Grid.Row="2" Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
-                                    <StackPanel>
-                                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                            <Run x:Name="lblBox3Eng" Text="Gross 1/2 Ratti Cash / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
-                                            <Run x:Name="lblBox3Urdu" Text="رتی کیش - بغیر مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
-                                        </TextBlock>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox x:Name="grossRattiCashTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" VerticalAlignment="Center" Text="0" TextAlignment="Center" TextBlock.FontSize="24"/>
-                                            <CheckBox x:Name="doPrintGrossRattiCash" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Box 4 (Row 2, Col 2): Net Ratti Cash Card -->
-                                <Border Grid.Row="2" Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
-                                    <StackPanel>
-                                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                            <Run x:Name="lblBox4Eng" Text="Net 1/2 Ratti Cash / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
-                                            <Run x:Name="lblBox4Urdu" Text="رتی کیش - بمعہ مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
-                                        </TextBlock>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox x:Name="netRattiCashTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" Foreground="#FF1E3A8A" FontWeight="Bold" VerticalAlignment="Center" Text="0" TextAlignment="Center" TextBlock.FontSize="24"/>
-                                            <CheckBox x:Name="doPrintNetRattiCash" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -393,113 +343,6 @@
                                 </Grid>
                             </Border>
                         </Grid>
-                    </Grid>
-                </ScrollViewer>
-            </TabItem>
-
-            <!-- Lab Tab -->
-            <TabItem Header="Lab" x:Name="labTab" FontSize="36" Width="100" Background="#FFFDD158">
-                <TabItem.FocusVisualStyle>
-                    <Style/>
-                </TabItem.FocusVisualStyle>
-                <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <Grid Margin="12" VerticalAlignment="Top">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" MinWidth="260" MaxWidth="340" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="40" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Today Gold Rate -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,6,8,6">
-                            <Run Text="Today Gold Rate / " />
-                            <Run Text="آج کا ریٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                        </TextBlock>
-                        <TextBox x:Name="goldRateTextbox" LostFocus="goldRateTextbox_LostFocus" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0,6,0,6" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="1000" GotFocus="clearOnFocus" TextChanged="goldRateTextbox_TextChanged" TextBlock.FontSize="24"/>
-                        <CheckBox IsChecked="true" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintGoldRate" Click="PrintCheckBox_Click" IsTabStop="False" />
-
-                        <!-- Select Customer -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,6,8,6">
-                            <Run Text="Select Customer / " />
-                            <Run Text="کسٹمر:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                        </TextBlock>
-                        <ComboBox x:Name="customers" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Margin="0,6,0,6" FontSize="18" Height="40" IsEditable="True" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24">
-                            <!-- ComboBox items go here -->
-                        </ComboBox>
-                        <CheckBox IsChecked="true" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintCustomerName" Click="PrintCheckBox_Click" IsTabStop="False"/>
-
-                        <!-- Lab Section -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,6,8,6">
-                            <Run Text="Lab / " />
-                            <Run Text="لیب:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                        </TextBlock>
-                        <Image Grid.Row="2" Grid.Column="1" Name="takeGold" Source="img/imgTake_gold1.jpg" Visibility="Hidden" Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Image Grid.Row="2" Grid.Column="1" Name="giveGold" Source="/imgGive_gold.jpg" Visibility="Hidden" Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <TextBox x:Name="labTextbox" Grid.Row="2" Grid.Column="2" Height="40" Margin="0,6,0,6" FontSize="18" TextChanged="TextBox_TextChanged" KeyDown="TextBox_KeyDown" PreviewTextInput="labTextbox_PreviewTextInput" VerticalAlignment="Center" Text="0" GotFocus="clearOnFocus" TextBlock.FontSize="24" />
-                        <CheckBox IsChecked="true" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintLab" Click="PrintCheckBox_Click" IsTabStop="False"/>
-
-                        <!-- Cash From Lab -->
-                        <TextBlock x:Name="cashFromLab" Grid.Row="3" Grid.Column="2" Text="0" VerticalAlignment="Center" FontSize="24" Foreground="#FF858600" Margin="0,6,0,6" />
-                        <CheckBox IsChecked="False" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" x:Name="doPrintCashFromLab" Click="PrintCheckBox_Click" IsTabStop="False"/>
-                    </Grid>
-                </ScrollViewer>
-            </TabItem>
-
-            <!-- Cash Tab -->
-            <TabItem Header="Cash" x:Name="cashTab" FontSize="36" Width="100" Background="#FF93F579">
-                <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <Grid Margin="12" VerticalAlignment="Top">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" MinWidth="260" MaxWidth="340" />
-                            <ColumnDefinition Width="120" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="40" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Today Gold Rate (Shared) -->
-                        <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,6,8,6">
-                            <Run Text="Today Gold Rate / " />
-                            <Run Text="آج کا ریٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                        </TextBlock>
-                        <TextBox x:Name="goldRateTextboxCash" LostFocus="goldRateTextbox_LostFocus" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Margin="0,6,0,6" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="{Binding ElementName=goldRateTextbox, Path=Text, Mode=TwoWay}" GotFocus="clearOnFocus" TextChanged="goldRateTextbox_TextChanged" TextBlock.FontSize="24"/>
-                        <CheckBox IsChecked="false" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintGoldRateCash" Click="PrintCheckBox_Click" IsTabStop="False"/>
-
-                        <!-- Select Customer (Shared) -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,6,8,6">
-                            <Run Text="Select Customer / " />
-                            <Run Text="کسٹمر:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                        </TextBlock>
-                        <ComboBox x:Name="customersCash" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Margin="0,6,0,6" FontSize="18" Height="40" IsEditable="True" Text="{Binding ElementName=customers, Path=Text, Mode=TwoWay}" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24">
-                            <!-- ComboBox items go here -->
-                        </ComboBox>
-                        <CheckBox IsChecked="True" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintCustomerNameCash" Click="PrintCheckBox_Click" IsTabStop="False"/>
-
-                        <!-- Cash Section -->
-                        <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="22" Margin="0,6,8,6">
-                            <Run Text="Cash / " />
-                            <Run Text="کیش:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
-                        </TextBlock>
-                        <Image Grid.Row="2" Grid.Column="1" Name="takeMoney" Source="/imgTake_money1.jpg" Visibility="Hidden" Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Image Grid.Row="2" Grid.Column="1" Name="giveMoney" Source="/imgGive_money.jpg" Visibility="Hidden" Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <TextBox x:Name="cashTextbox" LostFocus="goldRateTextbox_LostFocus" Grid.Row="2" Grid.Column="2" FontSize="18" Height="40" Margin="0,6,0,6" KeyDown="cashTextbox_KeyDown" PreviewTextInput="labTextbox_PreviewTextInput" VerticalAlignment="Center" Text="0" TextChanged="cashTextbox_TextChanged_1" GotFocus="clearOnFocus" TextBlock.FontSize="24"/>
-                        <CheckBox IsChecked="true" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" FontSize="24" HorizontalAlignment="Center" Name="doPrintCash" Click="PrintCheckBox_Click" TextBlock.FontSize="24" IsTabStop="False"/>
-
-                        <!-- Lab From Cash -->
-                        <TextBlock x:Name="labFromCash" Grid.Row="3" Grid.Column="2" Text="0" VerticalAlignment="Center" FontSize="24" Foreground="#FF008A2E" Margin="0,6,0,6" />
-                        <CheckBox IsChecked="False" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" x:Name="doPrintLabFromCash" Click="PrintCheckBox_Click" IsTabStop="False"/>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

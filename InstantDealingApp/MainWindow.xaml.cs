@@ -367,11 +367,23 @@ namespace InstantDealingApp
             if (mainTabControl.SelectedItem == testTab)
             {
                 updateTestCalculations();
+                if (saveButtonText != null)
+                {
+                    saveButtonText.Inlines.Clear();
+                    saveButtonText.Inlines.Add(new Run("Print / "));
+                    saveButtonText.Inlines.Add(new Run("پرنٹ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 22 });
+                }
             }
             else if (mainTabControl.SelectedItem == historyTab)
             {
                 _allPrintRecords = LoadPrintHistory();
                 ApplyHistoryFilters();
+                if (saveButtonText != null)
+                {
+                    saveButtonText.Inlines.Clear();
+                    saveButtonText.Inlines.Add(new Run("Print Selected / "));
+                    saveButtonText.Inlines.Add(new Run("منتخب پرنٹ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 22 });
+                }
             }
         }
 
@@ -383,6 +395,7 @@ namespace InstantDealingApp
         }
 
         private List<PrintRecord> _allPrintRecords = new List<PrintRecord>();
+        private bool _isApplyingHistoryFilters = false;
 
         private List<PrintRecord> LoadPrintHistory()
         {
@@ -418,13 +431,13 @@ namespace InstantDealingApp
             catch { }
         }
 
-        private void RecordCurrentPrint()
+        private void RecordCurrentPrint(DateTime printTime, FlowDocument? doc = null)
         {
             try
             {
                 PrintRecord record = new PrintRecord
                 {
-                    Timestamp = DateTime.Now
+                    Timestamp = printTime
                 };
 
                 record.TabType = "Test";
@@ -443,6 +456,11 @@ namespace InstantDealingApp
 
                 record.Notes = notesTextboxTest?.Text?.Trim() ?? "";
 
+                if (doc != null)
+                {
+                    record.ReceiptXaml = System.Windows.Markup.XamlWriter.Save(doc);
+                }
+
                 SavePrintRecord(record);
             }
             catch { }
@@ -452,52 +470,60 @@ namespace InstantDealingApp
         {
             if (historyDataGrid == null) return;
 
-            if (_allPrintRecords == null || _allPrintRecords.Count == 0)
+            _isApplyingHistoryFilters = true;
+            try
             {
-                _allPrintRecords = LoadPrintHistory();
+                if (_allPrintRecords == null || _allPrintRecords.Count == 0)
+                {
+                    _allPrintRecords = LoadPrintHistory();
+                }
+
+                string searchCustomer = historySearchCustomer?.Text?.Trim().ToLower() ?? "";
+                DateTime? selectedDate = historyDatePicker?.SelectedDate;
+
+                var filtered = _allPrintRecords.Where(r =>
+                {
+                    if (!string.IsNullOrEmpty(searchCustomer))
+                    {
+                        if (string.IsNullOrEmpty(r.CustomerName) || !r.CustomerName.ToLower().Contains(searchCustomer))
+                            return false;
+                    }
+
+                    if (selectedDate.HasValue)
+                    {
+                        if (r.Timestamp.Date != selectedDate.Value.Date)
+                            return false;
+                    }
+
+                    return true;
+                });
+
+                var displayList = filtered.Select(r => new PrintRecordDisplay
+                {
+                    Id = r.Id,
+                    Timestamp = r.Timestamp,
+                    CustomerName = string.IsNullOrWhiteSpace(r.CustomerName) ? "-" : r.CustomerName,
+                    RattiValue = r.Ratti,
+                    KaratValue = r.Karat,
+                    PurityPercentValue = r.PurityPercent,
+                    TotalWeightValue = r.TotalWeight,
+                    PureGoldValue = r.PureGold,
+                    LaborValue = r.Labor,
+                    CashValue = r.Cash,
+                    GoldRateValue = r.GoldRate,
+                    NotesDisplay = !string.IsNullOrWhiteSpace(r.Notes) && r.Notes != "-" ? r.Notes : 
+                                   (!string.IsNullOrWhiteSpace(r.Status) && r.Status != "-" ? r.Status : "-")
+                }).ToList();
+
+                historyDataGrid.ItemsSource = displayList;
+                if (historyCountText != null)
+                {
+                    historyCountText.Text = $"Records: {displayList.Count}";
+                }
             }
-
-            string searchCustomer = historySearchCustomer?.Text?.Trim().ToLower() ?? "";
-            DateTime? selectedDate = historyDatePicker?.SelectedDate;
-
-            var filtered = _allPrintRecords.Where(r =>
+            finally
             {
-                if (!string.IsNullOrEmpty(searchCustomer))
-                {
-                    if (string.IsNullOrEmpty(r.CustomerName) || !r.CustomerName.ToLower().Contains(searchCustomer))
-                        return false;
-                }
-
-                if (selectedDate.HasValue)
-                {
-                    if (r.Timestamp.Date != selectedDate.Value.Date)
-                        return false;
-                }
-
-                return true;
-            });
-
-            var displayList = filtered.Select(r => new PrintRecordDisplay
-            {
-                Id = r.Id,
-                Timestamp = r.Timestamp,
-                CustomerName = string.IsNullOrWhiteSpace(r.CustomerName) ? "-" : r.CustomerName,
-                RattiValue = r.Ratti,
-                KaratValue = r.Karat,
-                PurityPercentValue = r.PurityPercent,
-                TotalWeightValue = r.TotalWeight,
-                PureGoldValue = r.PureGold,
-                LaborValue = r.Labor,
-                CashValue = r.Cash,
-                GoldRateValue = r.GoldRate,
-                NotesDisplay = !string.IsNullOrWhiteSpace(r.Notes) && r.Notes != "-" ? r.Notes : 
-                               (!string.IsNullOrWhiteSpace(r.Status) && r.Status != "-" ? r.Status : "-")
-            }).ToList();
-
-            historyDataGrid.ItemsSource = displayList;
-            if (historyCountText != null)
-            {
-                historyCountText.Text = $"Records: {displayList.Count}";
+                _isApplyingHistoryFilters = false;
             }
         }
 
@@ -511,6 +537,362 @@ namespace InstantDealingApp
             if (historySearchCustomer != null) historySearchCustomer.Text = "";
             if (historyDatePicker != null) historyDatePicker.SelectedDate = null;
             ApplyHistoryFilters();
+        }
+
+        public void PrintReceipt(FlowDocument doc)
+        {
+            if (doc == null) return;
+
+            PrintDialog printDlg = new PrintDialog();
+            IDocumentPaginatorSource idpSource = doc;
+
+            bool? print = printDlg.ShowDialog();
+            if (print != null && (print ?? false))
+            {
+                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
+                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
+            }
+        }
+
+        public void PrintHistoryRecordById(string recordId)
+        {
+            if (string.IsNullOrWhiteSpace(recordId)) return;
+
+            var record = _allPrintRecords.FirstOrDefault(r => r.Id == recordId);
+            if (record == null)
+            {
+                _allPrintRecords = LoadPrintHistory();
+                record = _allPrintRecords.FirstOrDefault(r => r.Id == recordId);
+            }
+
+            if (record != null)
+            {
+                FlowDocument doc = CreateFlowDocumentFromRecord(record);
+                PrintReceipt(doc);
+            }
+        }
+
+        private void historyRowPrint_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string recordId && !string.IsNullOrWhiteSpace(recordId))
+            {
+                PrintHistoryRecordById(recordId);
+            }
+        }
+
+        private void historyPrintSelected_Click(object sender, RoutedEventArgs e)
+        {
+            if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
+            {
+                PrintHistoryRecordById(display.Id);
+            }
+            else
+            {
+                MessageBox.Show("Please select a record from the history table to print.", "Print Receipt", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void historyDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
+            {
+                PrintHistoryRecordById(display.Id);
+            }
+        }
+
+        private void historyDataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Return)
+            {
+                if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
+                {
+                    PrintHistoryRecordById(display.Id);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void historyDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isApplyingHistoryFilters) return;
+
+            if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
+            {
+                var record = _allPrintRecords.FirstOrDefault(r => r.Id == display.Id);
+                if (record != null)
+                {
+                    PopulateTestTabFromRecord(record);
+                }
+            }
+        }
+
+        private void PopulateTestTabFromRecord(PrintRecord record)
+        {
+            if (record == null) return;
+            try
+            {
+                if (customersTest != null)
+                {
+                    customersTest.Text = record.CustomerName == "-" ? "" : record.CustomerName;
+                    if (doPrintCustomerNameTest != null)
+                        doPrintCustomerNameTest.IsChecked = !string.IsNullOrWhiteSpace(record.CustomerName) && record.CustomerName != "-";
+                }
+
+                if (totalWeightTextbox != null)
+                {
+                    totalWeightTextbox.Text = record.TotalWeight > 0 ? record.TotalWeight.ToString("0.000") : "0";
+                    if (doPrintTotalWeight != null)
+                        doPrintTotalWeight.IsChecked = record.TotalWeight > 0;
+                }
+
+                if (resultTextbox != null)
+                {
+                    resultTextbox.Text = record.Ratti > 0 ? record.Ratti.ToString("0.###") : "0";
+                    if (doPrintResult != null)
+                        doPrintResult.IsChecked = record.Ratti > 0;
+                }
+
+                if (pureGoldTextbox != null)
+                {
+                    pureGoldTextbox.Text = record.PureGold > 0 ? record.PureGold.ToString("F3") : "0.000";
+                    if (doPrintPureGold != null)
+                        doPrintPureGold.IsChecked = record.PureGold > 0;
+                }
+
+                if (laborTextbox != null)
+                {
+                    laborTextbox.Text = record.Labor > 0 ? record.Labor.ToString("N0") : "0";
+                    if (doPrintLabor != null)
+                        doPrintLabor.IsChecked = record.Labor > 0;
+                }
+
+                if (goldRateTextboxTest != null)
+                {
+                    goldRateTextboxTest.Text = record.GoldRate > 0 ? record.GoldRate.ToString("N0") : "0";
+                    _rawBaseGoldRate = record.GoldRate;
+                    if (doPrintGoldRateTest != null)
+                        doPrintGoldRateTest.IsChecked = record.GoldRate > 0;
+                }
+
+                if (goldRateDiffTextbox != null)
+                {
+                    goldRateDiffTextbox.Text = "0";
+                }
+
+                if (karatInputTextbox != null)
+                {
+                    karatInputTextbox.Text = record.Karat > 0 ? record.Karat.ToString("0.##") : "0";
+                    if (doPrintKarat != null)
+                        doPrintKarat.IsChecked = record.Karat > 0;
+                }
+
+                if (purityPercentTextbox != null)
+                {
+                    purityPercentTextbox.Text = record.PurityPercent > 0 ? record.PurityPercent.ToString("0.##") : "0";
+                    if (doPrintPurityPercent != null)
+                        doPrintPurityPercent.IsChecked = record.PurityPercent > 0;
+                }
+
+                if (notesTextboxTest != null)
+                {
+                    notesTextboxTest.Text = record.Notes == "-" ? "" : (record.Notes ?? "");
+                    if (doPrintNotes != null)
+                        doPrintNotes.IsChecked = !string.IsNullOrWhiteSpace(notesTextboxTest.Text);
+                }
+
+                if (totalPureGoldCashTextbox != null)
+                {
+                    totalPureGoldCashTextbox.Text = record.Cash > 0 ? record.Cash.ToString("N0") : "0";
+                    if (doPrintTotalPureGoldCash != null)
+                        doPrintTotalPureGoldCash.IsChecked = record.Cash > 0;
+                }
+            }
+            catch { }
+        }
+
+        public FlowDocument CreateFlowDocumentFromRecord(PrintRecord record)
+        {
+            if (record == null) return new FlowDocument();
+
+            if (!string.IsNullOrWhiteSpace(record.ReceiptXaml))
+            {
+                try
+                {
+                    var parsed = (FlowDocument)System.Windows.Markup.XamlReader.Parse(record.ReceiptXaml);
+                    if (parsed != null) return parsed;
+                }
+                catch { }
+            }
+
+            FlowDocument flowDoc = new FlowDocument();
+            flowDoc.PageWidth = 288;
+            flowDoc.PagePadding = new Thickness(12);
+            flowDoc.FontFamily = new FontFamily("Cambria");
+            flowDoc.FontSize = 16;
+            flowDoc.Background = Brushes.White;
+
+            // Header Section
+            Paragraph headerParagraph = new Paragraph(new Run("INSTANT DEALING RECEIPT"))
+            {
+                TextAlignment = TextAlignment.Center,
+                FontWeight = FontWeights.Bold,
+                FontSize = 20,
+                Margin = new Thickness(0, 0, 0, 8),
+                Foreground = Brushes.Black
+            };
+            flowDoc.Blocks.Add(headerParagraph);
+
+            // Date and Time (from original record)
+            Paragraph dateParagraph = new Paragraph(new Run(record.Timestamp.ToString("dddd, MMMM dd, yyyy - HH:mm")))
+            {
+                TextAlignment = TextAlignment.Center,
+                FontStyle = FontStyles.Italic,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 0, 10),
+                Foreground = Brushes.Black
+            };
+            flowDoc.Blocks.Add(dateParagraph);
+
+            // Customer
+            if (!string.IsNullOrWhiteSpace(record.CustomerName) && record.CustomerName != "-")
+            {
+                Paragraph customerParagraph = new Paragraph();
+                customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.SemiBold });
+                customerParagraph.Inlines.Add(new Bold(new Run(record.CustomerName)) { Foreground = Brushes.Black });
+                customerParagraph.TextAlignment = TextAlignment.Left;
+                customerParagraph.FontSize = 16;
+                customerParagraph.Margin = new Thickness(0, 0, 0, 8);
+                flowDoc.Blocks.Add(customerParagraph);
+            }
+
+            bool hasTransactionData = false;
+
+            // Test Transaction Table
+            bool hasTestFields = record.TotalWeight > 0 || record.Ratti > 0 || record.Karat > 0 ||
+                                 record.PurityPercent > 0 || record.PureGold > 0 || record.Labor > 0 || record.Cash > 0;
+
+            if (hasTestFields)
+            {
+                if (hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
+                hasTransactionData = true;
+
+                Paragraph testHeader = new Paragraph();
+                testHeader.Inlines.Add(new Underline(new Bold(new Run("TEST TRANSACTION"))));
+                testHeader.TextAlignment = TextAlignment.Center;
+                testHeader.FontSize = 18;
+                testHeader.Margin = new Thickness(0, 8, 0, 5);
+                testHeader.Foreground = Brushes.Black;
+                flowDoc.Blocks.Add(testHeader);
+
+                Table testTable = new Table() { CellSpacing = 2 };
+                testTable.Columns.Add(new TableColumn() { Width = new GridLength(140) });
+                testTable.Columns.Add(new TableColumn() { Width = new GridLength(100) });
+
+                TableRowGroup testRowGroup = new TableRowGroup();
+
+                if (record.TotalWeight > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Total Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.TotalWeight:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.Ratti > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Result (Ratti):")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Ratti:0.###}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.Karat > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Karat:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Karat:0.##}K")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.PurityPercent > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Purity:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.PurityPercent:0.##}%")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.PureGold > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.PureGold:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.Labor > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Labor Charges:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {record.Labor:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.Cash > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {record.Cash:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                testTable.RowGroups.Add(testRowGroup);
+                flowDoc.Blocks.Add(testTable);
+            }
+
+            // Gold Rate Section
+            if (record.GoldRate > 0)
+            {
+                if (hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
+                Paragraph goldRateParagraph = new Paragraph();
+                goldRateParagraph.Inlines.Add(new Run($"Gold Rate: {record.GoldRate:N0}") { FontWeight = FontWeights.Bold, FontSize = 13 });
+                goldRateParagraph.TextAlignment = TextAlignment.Center;
+                goldRateParagraph.Margin = new Thickness(0, 6, 0, 6);
+                flowDoc.Blocks.Add(goldRateParagraph);
+            }
+
+            // Notes Section
+            if (!string.IsNullOrWhiteSpace(record.Notes) && record.Notes != "-")
+            {
+                flowDoc.Blocks.Add(CreateSeparator());
+                Paragraph notesHeader = new Paragraph();
+                notesHeader.Inlines.Add(new Bold(new Run("NOTES / نوٹ:")));
+                notesHeader.FontSize = 13;
+                notesHeader.Margin = new Thickness(0, 4, 0, 2);
+                notesHeader.Foreground = Brushes.Black;
+                flowDoc.Blocks.Add(notesHeader);
+
+                Paragraph notesBody = new Paragraph(new Run(record.Notes))
+                {
+                    FontSize = 11,
+                    Margin = new Thickness(0, 0, 0, 4),
+                    Foreground = Brushes.DarkSlateGray
+                };
+                flowDoc.Blocks.Add(notesBody);
+            }
+
+            // Footer
+            flowDoc.Blocks.Add(CreateSeparator());
+            Paragraph footer = new Paragraph(new Run("Thank You for Your Business!"))
+            {
+                TextAlignment = TextAlignment.Center,
+                FontSize = 11,
+                FontStyle = FontStyles.Italic,
+                Margin = new Thickness(0, 5, 0, 0)
+            };
+            flowDoc.Blocks.Add(footer);
+
+            return flowDoc;
         }
 
         #endregion
@@ -1121,9 +1503,24 @@ namespace InstantDealingApp
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            if (mainTabControl.SelectedItem == historyTab)
+            {
+                if (historyDataGrid.SelectedItem is PrintRecordDisplay selectedDisplay)
+                {
+                    PrintHistoryRecordById(selectedDisplay.Id);
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Please select a record from the history table to print.", "Print Receipt", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+            }
+
             PrintDialog printDlg = new PrintDialog();
 
-            FlowDocument doc = CreateFlowDocument(DateTime.Now);
+            DateTime printTime = DateTime.Now;
+            FlowDocument doc = CreateFlowDocument(printTime);
             doc.Name = "FlowDoc";
             IDocumentPaginatorSource idpSource = doc;
             documentView dwin = new documentView(doc);
@@ -1135,7 +1532,7 @@ namespace InstantDealingApp
             {
                 printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
                 printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
-                RecordCurrentPrint();
+                RecordCurrentPrint(printTime, doc);
             }
         }
 
@@ -1163,7 +1560,7 @@ namespace InstantDealingApp
             flowDoc.Blocks.Add(headerParagraph);
 
             // Date and Time
-            Paragraph dateParagraph = new Paragraph(new Run(DateTime.Now.ToString("dddd, MMMM dd, yyyy - HH:mm")))
+            Paragraph dateParagraph = new Paragraph(new Run(date.ToString("dddd, MMMM dd, yyyy - HH:mm")))
             {
                 TextAlignment = TextAlignment.Center,
                 FontStyle = FontStyles.Italic,
@@ -1498,6 +1895,7 @@ namespace InstantDealingApp
         public double GoldRate { get; set; }
         public string Status { get; set; } = "";
         public string Notes { get; set; } = "";
+        public string ReceiptXaml { get; set; } = "";
     }
 
     public class PrintRecordDisplay

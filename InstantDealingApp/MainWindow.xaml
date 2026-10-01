@@ -366,6 +366,8 @@
                                 <ColumnDefinition Width="180" />
                                 <ColumnDefinition Width="20" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
@@ -391,8 +393,11 @@
                             <!-- Clear Filters Button -->
                             <Button x:Name="historyClearFiltersBtn" Grid.Column="6" Height="38" Padding="16,0" Content="Clear Filters" FontSize="14" FontWeight="SemiBold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="historyClearFilters_Click" />
 
+                            <!-- Print Selected Receipt Button -->
+                            <Button x:Name="historyPrintSelectedBtn" Grid.Column="8" Height="38" Padding="16,0" Content="Print Receipt / پرنٹ" FontSize="14" FontWeight="Bold" Background="#0284C7" Foreground="#FFFFFF" BorderBrush="#0369A1" Click="historyPrintSelected_Click" ToolTip="Print exact receipt of selected history record" />
+
                             <!-- Records Count Text -->
-                            <TextBlock x:Name="historyCountText" Grid.Column="8" Text="Records: 0" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#0284C7" />
+                            <TextBlock x:Name="historyCountText" Grid.Column="10" Text="Records: 0" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#0284C7" />
                         </Grid>
                     </Border>
 
@@ -407,14 +412,17 @@
                                   GridLinesVisibility="Horizontal"
                                   HorizontalGridLinesBrush="#E2E8F0"
                                   VerticalGridLinesBrush="Transparent"
-                                  RowHeight="36"
+                                  RowHeight="38"
                                   FontSize="15"
                                   HeadersVisibility="Column"
                                   Background="#FFFFFF"
                                   AlternatingRowBackground="#F8FAFC"
                                   BorderThickness="0"
                                   SelectionMode="Single"
-                                  SelectionUnit="FullRow">
+                                  SelectionUnit="FullRow"
+                                  MouseDoubleClick="historyDataGrid_MouseDoubleClick"
+                                  PreviewKeyDown="historyDataGrid_PreviewKeyDown"
+                                  SelectionChanged="historyDataGrid_SelectionChanged">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
                                     <Setter Property="Background" Value="#F1F5F9" />
@@ -541,6 +549,33 @@
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
+
+                                <!-- Col 12: Action Print -->
+                                <DataGridTemplateColumn Header="Action" Width="105">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Print / پرنٹ" 
+                                                    Height="28" 
+                                                    Padding="8,0" 
+                                                    FontSize="12" 
+                                                    FontWeight="Bold" 
+                                                    Background="#0284C7" 
+                                                    Foreground="#FFFFFF" 
+                                                    BorderBrush="#0369A1" 
+                                                    Click="historyRowPrint_Click" 
+                                                    Tag="{Binding Id}" 
+                                                    Cursor="Hand"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Center">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="4"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>
@@ -582,7 +617,7 @@
             </Button>
 
             <Button Grid.Column="6" Height="48" VerticalAlignment="Center" Name="SaveButton" Click="SaveButton_Click" Background="#0284C7" BorderBrush="#0369A1">
-                <TextBlock FontSize="18" VerticalAlignment="Center" Foreground="#FFFFFF" FontWeight="Bold">
+                <TextBlock x:Name="saveButtonText" FontSize="18" VerticalAlignment="Center" Foreground="#FFFFFF" FontWeight="Bold">
                     <Run Text="Print / " />
                     <Run Text="پرنٹ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="22" />
                 </TextBlock>

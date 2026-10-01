@@ -185,11 +185,11 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Box 1 (Col 0): Cash Without Labor (Gross Cash) -->
-                                <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
+                                <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="8,8,8,8">
                                     <StackPanel>
-                                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                            <Run Text="Cash Without Labor / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
-                                            <Run Text="کیش - بغیر مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
+                                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                            <Run Text="Cash Without Labor / " FontSize="13.5" FontWeight="Bold" Foreground="#334155" />
+                                            <Run Text="کیش - بغیر مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="17" Foreground="#334155" />
                                         </TextBlock>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -197,17 +197,17 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBox x:Name="grossPureGoldCashTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" VerticalAlignment="Center" Text="0" TextAlignment="Center" TextBlock.FontSize="24"/>
-                                            <CheckBox x:Name="doPrintGrossPureGoldCash" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
+                                            <CheckBox x:Name="doPrintGrossPureGoldCash" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Margin="6,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>
 
                                 <!-- Box 2 (Col 2): Cash With Labor (Total Pure Gold Cash) -->
-                                <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="12,10,12,10">
+                                <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="10" Padding="8,8,8,8">
                                     <StackPanel>
-                                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,8">
-                                            <Run Text="Cash With Labor / " FontSize="16" FontWeight="Bold" Foreground="#334155" />
-                                            <Run Text="کیش - بمعہ مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" Foreground="#334155" />
+                                        <TextBlock TextAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                            <Run Text="Cash With Labor / " FontSize="13.5" FontWeight="Bold" Foreground="#334155" />
+                                            <Run Text="کیش - بمعہ مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="17" Foreground="#334155" />
                                         </TextBlock>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -215,7 +215,7 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBox x:Name="totalPureGoldCashTextbox" Grid.Column="0" FontSize="20" Height="42" IsReadOnly="True" Focusable="False" IsTabStop="False" Background="#FFFFFF" Foreground="#FF008A2E" FontWeight="Bold" VerticalAlignment="Center" Text="0" TextAlignment="Center" TextBlock.FontSize="24"/>
-                                            <CheckBox x:Name="doPrintTotalPureGoldCash" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Margin="8,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
+                                            <CheckBox x:Name="doPrintTotalPureGoldCash" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Margin="6,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
                                         </Grid>
                                     </StackPanel>
                                 </Border>

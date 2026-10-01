@@ -96,6 +96,59 @@ namespace InstantDealingApp
             ApplyHistoryFilters();
             mainTabControl.SelectedItem = testTab;
             updateTestCalculations();
+
+            CheckAndHandleScreenshotArgs();
+        }
+
+        private void CheckAndHandleScreenshotArgs()
+        {
+            var args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--screenshot" && i + 1 < args.Length)
+                {
+                    string outPath = args[i + 1];
+                    string? historyOutPath = (i + 2 < args.Length && !args[i + 2].StartsWith("--")) ? args[i + 2] : null;
+
+                    Dispatcher.InvokeAsync(async () =>
+                    {
+                        await System.Threading.Tasks.Task.Delay(700);
+                        CaptureVisualToFile(this, outPath);
+
+                        if (!string.IsNullOrEmpty(historyOutPath) && historyTab != null)
+                        {
+                            mainTabControl.SelectedItem = historyTab;
+                            await System.Threading.Tasks.Task.Delay(700);
+                            CaptureVisualToFile(this, historyOutPath);
+                        }
+
+                        Application.Current.Shutdown();
+                    });
+                    break;
+                }
+            }
+        }
+
+        private void CaptureVisualToFile(Visual visual, string filePath)
+        {
+            try
+            {
+                this.UpdateLayout();
+                double width = this.ActualWidth > 0 ? this.ActualWidth : 800;
+                double height = this.ActualHeight > 0 ? this.ActualHeight : 700;
+
+                RenderTargetBitmap rtb = new RenderTargetBitmap((int)width, (int)height, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(visual);
+
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    encoder.Save(fs);
+                }
+            }
+            catch { }
         }
 
         private string GetPrintSettingsJsonPath()

@@ -128,7 +128,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="90" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="goldRateTextboxTest" Grid.Column="0" LostFocus="goldRateTextbox_LostFocus" HorizontalAlignment="Stretch" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="1000" GotFocus="clearOnFocus" TextChanged="goldRateTextbox_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBox x:Name="goldRateTextboxTest" Grid.Column="0" LostFocus="goldRateTextbox_LostFocus" HorizontalAlignment="Stretch" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="goldRateTextbox_TextChanged" TextBlock.FontSize="24"/>
                                 <TextBlock Grid.Column="1" Text="-" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Margin="6,0,6,0" Foreground="#64748B" />
                                 <TextBox x:Name="goldRateDiffTextbox" Grid.Column="2" FontSize="18" Height="40" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="goldRateDiffTextbox_TextChanged" TextBlock.FontSize="24" ToolTip="Subtracted Amount from Gold Rate" HorizontalContentAlignment="Center"/>
                             </Grid>
@@ -139,7 +139,7 @@
                                 <Run Text="Select Customer / " />
                                 <Run Text="کسٹمر:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" />
                             </TextBlock>
-                            <ComboBox x:Name="customersTest" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="0,4,0,4" FontSize="18" Height="40" IsEditable="True" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24">
+                            <ComboBox x:Name="customersTest" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="0,4,0,4" FontSize="18" Height="40" IsEditable="True" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" SelectionChanged="customersComboBox_SelectionChanged" TextBlock.FontSize="24">
                                 <!-- ComboBox items go here -->
                             </ComboBox>
                             <CheckBox IsChecked="true" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" FontSize="18" HorizontalAlignment="Center" Name="doPrintCustomerNameTest" Click="PrintCheckBox_Click" IsTabStop="False"/>
@@ -360,14 +360,11 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="200" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="180" />
-                                <ColumnDefinition Width="16" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="160" />
-                                <ColumnDefinition Width="16" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="130" />
-                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="20" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -375,26 +372,27 @@
 
                             <!-- Customer Filter -->
                             <TextBlock Grid.Column="0" Text="Customer:" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,8,0" />
-                            <TextBox x:Name="historySearchCustomer" Grid.Column="1" Height="36" FontSize="16" VerticalContentAlignment="Center" Padding="6,2" TextChanged="historyFilter_Changed" ToolTip="Search by customer name" />
+                            <TextBox x:Name="historySearchCustomer" Grid.Column="1" Height="38" FontSize="16" VerticalContentAlignment="Center" Padding="6,2" TextChanged="historyFilter_Changed" ToolTip="Search by customer name" />
 
                             <!-- Date Filter -->
                             <TextBlock Grid.Column="3" Text="Date:" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,8,0" />
-                            <DatePicker x:Name="historyDatePicker" Grid.Column="4" Height="36" FontSize="15" VerticalContentAlignment="Center" SelectedDateChanged="historyFilter_Changed" ToolTip="Filter by date" />
-
-                            <!-- Tab Filter -->
-                            <TextBlock Grid.Column="6" Text="Tab:" VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#334155" Margin="0,0,8,0" />
-                            <ComboBox x:Name="historyTabFilter" Grid.Column="7" Height="36" FontSize="15" VerticalContentAlignment="Center" SelectionChanged="historyFilter_Changed" SelectedIndex="0">
-                                <ComboBoxItem Content="All Tabs" />
-                                <ComboBoxItem Content="Test" />
-                                <ComboBoxItem Content="Lab" />
-                                <ComboBoxItem Content="Cash" />
-                            </ComboBox>
+                            <DatePicker x:Name="historyDatePicker" Grid.Column="4" Height="38" FontSize="16" VerticalContentAlignment="Center" SelectedDateChanged="historyFilter_Changed" ToolTip="Filter by date">
+                                <DatePicker.CalendarStyle>
+                                    <Style TargetType="Calendar">
+                                        <Setter Property="LayoutTransform">
+                                            <Setter.Value>
+                                                <ScaleTransform ScaleX="1.6" ScaleY="1.6" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </DatePicker.CalendarStyle>
+                            </DatePicker>
 
                             <!-- Clear Filters Button -->
-                            <Button x:Name="historyClearFiltersBtn" Grid.Column="9" Height="36" Padding="12,0" Content="Clear Filters" FontSize="14" FontWeight="SemiBold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="historyClearFilters_Click" />
+                            <Button x:Name="historyClearFiltersBtn" Grid.Column="6" Height="38" Padding="16,0" Content="Clear Filters" FontSize="14" FontWeight="SemiBold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="historyClearFilters_Click" />
 
                             <!-- Records Count Text -->
-                            <TextBlock x:Name="historyCountText" Grid.Column="11" Text="Records: 0" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="#0284C7" />
+                            <TextBlock x:Name="historyCountText" Grid.Column="8" Text="Records: 0" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#0284C7" />
                         </Grid>
                     </Border>
 
@@ -470,18 +468,6 @@
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
                                             <Setter Property="TextAlignment" Value="Center" />
-                                            <Setter Property="Padding" Value="4,0" />
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <!-- Col 5: Tab / Type -->
-                                <DataGridTextColumn Header="Tab" Binding="{Binding TabType}" Width="80" SortMemberPath="TabType">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="VerticalAlignment" Value="Center" />
-                                            <Setter Property="TextAlignment" Value="Center" />
-                                            <Setter Property="FontWeight" Value="SemiBold" />
                                             <Setter Property="Padding" Value="4,0" />
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>

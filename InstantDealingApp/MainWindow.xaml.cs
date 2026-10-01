@@ -250,6 +250,7 @@ namespace InstantDealingApp
                     {
                         customersTest.Text = CapitalizeCustomerName(customersTest.Text);
                         AppendUniqueName(customersTest.Text);
+                        if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = true;
                     }
                     totalWeightTextbox.Focus();
                     e.Handled = true;
@@ -458,7 +459,6 @@ namespace InstantDealingApp
 
             string searchCustomer = historySearchCustomer?.Text?.Trim().ToLower() ?? "";
             DateTime? selectedDate = historyDatePicker?.SelectedDate;
-            string selectedTab = (historyTabFilter?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All Tabs";
 
             var filtered = _allPrintRecords.Where(r =>
             {
@@ -474,12 +474,6 @@ namespace InstantDealingApp
                         return false;
                 }
 
-                if (selectedTab != "All Tabs" && !string.IsNullOrEmpty(selectedTab))
-                {
-                    if (!string.Equals(r.TabType, selectedTab, StringComparison.OrdinalIgnoreCase))
-                        return false;
-                }
-
                 return true;
             });
 
@@ -488,7 +482,6 @@ namespace InstantDealingApp
                 Id = r.Id,
                 Timestamp = r.Timestamp,
                 CustomerName = string.IsNullOrWhiteSpace(r.CustomerName) ? "-" : r.CustomerName,
-                TabType = string.IsNullOrWhiteSpace(r.TabType) ? "-" : r.TabType,
                 RattiValue = r.Ratti,
                 KaratValue = r.Karat,
                 PurityPercentValue = r.PurityPercent,
@@ -517,7 +510,6 @@ namespace InstantDealingApp
         {
             if (historySearchCustomer != null) historySearchCustomer.Text = "";
             if (historyDatePicker != null) historyDatePicker.SelectedDate = null;
-            if (historyTabFilter != null) historyTabFilter.SelectedIndex = 0;
             ApplyHistoryFilters();
         }
 
@@ -614,15 +606,25 @@ namespace InstantDealingApp
             {
                 _isUpdatingGoldRate = false;
             }
+            updateTestCalculations();
         }
 
         private void goldRateDiffTextbox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (goldRateDiffTextbox != null && goldRateDiffTextbox.IsFocused && doPrintGoldRateTest != null)
+            {
+                doPrintGoldRateTest.IsChecked = true;
+            }
             ApplyGoldRateDifference();
         }
 
         private void notesTextboxTest_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (notesTextboxTest != null && notesTextboxTest.IsFocused && doPrintNotes != null)
+            {
+                doPrintNotes.IsChecked = true;
+            }
+
             if (notesTextboxTest == null || string.IsNullOrWhiteSpace(notesTextboxTest.Text)) return;
 
             ExtractAndApplyGoldRateFromNotes(notesTextboxTest.Text);
@@ -829,6 +831,7 @@ namespace InstantDealingApp
             if (_isSyncingPurity) return;
             if (rattiConversionTextbox != null && rattiConversionTextbox.IsFocused)
             {
+                if (doPrintResult != null) doPrintResult.IsChecked = true;
                 double ratti = NumberFormattingHelper.GetCleanDouble(rattiConversionTextbox);
                 SyncAllPurityFields(ratti, rattiConversionTextbox);
             }
@@ -855,6 +858,7 @@ namespace InstantDealingApp
             if (_isSyncingPurity) return;
             if (purityRattiResultTextbox != null && purityRattiResultTextbox.IsFocused)
             {
+                if (doPrintResult != null) doPrintResult.IsChecked = true;
                 double ratti = NumberFormattingHelper.GetCleanDouble(purityRattiResultTextbox);
                 SyncAllPurityFields(ratti, purityRattiResultTextbox);
             }
@@ -881,6 +885,7 @@ namespace InstantDealingApp
                     double ratti = ((sample - resWeight) / sample) * 96.0;
                     if (ratti < 0) ratti = 0;
                     SyncAllPurityFields(ratti, sampleWeightTextbox);
+                    if (doPrintResult != null) doPrintResult.IsChecked = true;
                 }
             }
             catch { }
@@ -893,11 +898,27 @@ namespace InstantDealingApp
 
         private void goldRateTextbox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (goldRateTextboxTest != null && goldRateTextboxTest.IsFocused && !_isUpdatingGoldRate)
+            {
+                if (doPrintGoldRateTest != null) doPrintGoldRateTest.IsChecked = true;
+                double entered = NumberFormattingHelper.GetCleanDouble(goldRateTextboxTest);
+                double diff = (goldRateDiffTextbox != null && !string.IsNullOrWhiteSpace(goldRateDiffTextbox.Text)) 
+                    ? NumberFormattingHelper.GetCleanDouble(goldRateDiffTextbox) : 0;
+                _rawBaseGoldRate = entered + diff;
+            }
             updateTestCalculations();
         }
 
         private void testTabInputs_TextChanged(object sender, TextChangedEventArgs e)
         {
+            var tb = sender as TextBox;
+            if (tb != null && tb.IsFocused)
+            {
+                if (tb == totalWeightTextbox && doPrintTotalWeight != null)
+                    doPrintTotalWeight.IsChecked = true;
+                else if (tb == resultTextbox && doPrintResult != null)
+                    doPrintResult.IsChecked = true;
+            }
             updateTestCalculations();
         }
 
@@ -913,6 +934,7 @@ namespace InstantDealingApp
             if (laborTextbox != null && laborTextbox.IsFocused)
             {
                 _isLaborManuallyEdited = true;
+                if (doPrintLabor != null) doPrintLabor.IsChecked = true;
             }
             updateTestCalculations();
         }
@@ -1050,8 +1072,25 @@ namespace InstantDealingApp
 
         private void clearOnFocus(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = (TextBox)sender;
-            textBox.Clear();
+            if (sender is TextBox textBox)
+            {
+                if (textBox.Text == "0")
+                {
+                    textBox.Clear();
+                }
+                else
+                {
+                    textBox.SelectAll();
+                }
+            }
+        }
+
+        private void selectOnFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                textBox.SelectAll();
+            }
         }
 
         private void SelectAllCheckBoxes_Click(object sender, RoutedEventArgs e)
@@ -1386,6 +1425,15 @@ namespace InstantDealingApp
                 string cap = CapitalizeCustomerName(cb.Text);
                 cb.Text = cap;
                 AppendUniqueName(cap);
+                if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = true;
+            }
+        }
+
+        private void customersComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (customersTest != null && customersTest.SelectedItem != null && doPrintCustomerNameTest != null)
+            {
+                doPrintCustomerNameTest.IsChecked = true;
             }
         }
 

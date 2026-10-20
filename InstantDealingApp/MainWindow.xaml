@@ -149,12 +149,14 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Top Selector Bar (Full Width across Col 0 & Col 1) -->
-                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10" Margin="12,10,12,6" Padding="10,6">
+                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10" Margin="12,10,12,6" Padding="12,8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Group 1: Metal Type (Gold / Silver) -->
@@ -174,45 +176,29 @@
                                     </RadioButton>
                                 </StackPanel>
 
-                                <!-- Group 2: Item Type (Set, Tops, Chain, Ring, Chori, Other) -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                    <TextBlock Text="Item / چیز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,8,0" />
-                                    <RadioButton x:Name="radioSet" GroupName="ItemTypeGroup" Style="{StaticResource CardRadioButton}" Checked="itemTypeRadio_Checked" PreviewMouseDown="itemTypeRadio_PreviewMouseDown">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Image Source="/img/item_necklace.png" Width="28" Height="28" Margin="0,0,5,0" />
-                                            <TextBlock Text="Set" FontSize="17" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
-                                        </StackPanel>
+                                <!-- Group 2: Slip Size (Large / Small) -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="Slip Size / پرنٹ سائز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,8,0" />
+                                    <RadioButton x:Name="radioSlipLarge" GroupName="SlipSizeGroup" Style="{StaticResource CardRadioButton}" IsChecked="True" Checked="slipSizeRadio_Checked">
+                                        <TextBlock Text="Large (80mm)" FontSize="16" FontWeight="Bold" Foreground="#0369A1" VerticalAlignment="Center" />
                                     </RadioButton>
-                                    <RadioButton x:Name="radioTops" GroupName="ItemTypeGroup" Style="{StaticResource CardRadioButton}" Checked="itemTypeRadio_Checked" PreviewMouseDown="itemTypeRadio_PreviewMouseDown">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Image Source="/img/item_tops.png" Width="28" Height="28" Margin="0,0,5,0" />
-                                            <TextBlock Text="Tops" FontSize="17" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
-                                        </StackPanel>
+                                    <RadioButton x:Name="radioSlipSmall" GroupName="SlipSizeGroup" Style="{StaticResource CardRadioButton}" IsChecked="False" Checked="slipSizeRadio_Checked">
+                                        <TextBlock Text="Small (58mm)" FontSize="16" FontWeight="Bold" Foreground="#0369A1" VerticalAlignment="Center" />
                                     </RadioButton>
-                                    <RadioButton x:Name="radioChain" GroupName="ItemTypeGroup" Style="{StaticResource CardRadioButton}" Checked="itemTypeRadio_Checked" PreviewMouseDown="itemTypeRadio_PreviewMouseDown">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Image Source="/img/item_chain.png" Width="28" Height="28" Margin="0,0,5,0" />
-                                            <TextBlock Text="Chain" FontSize="17" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </RadioButton>
-                                    <RadioButton x:Name="radioRing" GroupName="ItemTypeGroup" Style="{StaticResource CardRadioButton}" Checked="itemTypeRadio_Checked" PreviewMouseDown="itemTypeRadio_PreviewMouseDown">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Image Source="/img/item_ring.png" Width="28" Height="28" Margin="0,0,5,0" />
-                                            <TextBlock Text="Ring" FontSize="17" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </RadioButton>
-                                    <RadioButton x:Name="radioChori" GroupName="ItemTypeGroup" Style="{StaticResource CardRadioButton}" Checked="itemTypeRadio_Checked" PreviewMouseDown="itemTypeRadio_PreviewMouseDown">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Image Source="/img/item_chori.png" Width="28" Height="28" Margin="0,0,5,0" />
-                                            <TextBlock Text="Chori" FontSize="17" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </RadioButton>
-                                    <RadioButton x:Name="radioOther" GroupName="ItemTypeGroup" Style="{StaticResource CardRadioButton}" Checked="itemTypeRadio_Checked" PreviewMouseDown="itemTypeRadio_PreviewMouseDown">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Image Source="/img/item_other.png" Width="28" Height="28" Margin="0,0,5,0" />
-                                            <TextBlock Text="Other" FontSize="17" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </RadioButton>
+                                </StackPanel>
+
+                                <!-- Group 3: Item Type Dropdown -->
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <TextBlock Text="Item / چیز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,10,0" />
+                                    <ComboBox x:Name="itemTypeDropdownTest" Width="180" Height="42" FontSize="18" FontWeight="Bold" SelectionChanged="itemTypeDropdown_SelectionChanged">
+                                        <ComboBoxItem Content="-- None / کوئی نہیں --" IsSelected="True" Tag="" />
+                                        <ComboBoxItem Content="Set" Tag="Set" />
+                                        <ComboBoxItem Content="Tops" Tag="Tops" />
+                                        <ComboBoxItem Content="Chain" Tag="Chain" />
+                                        <ComboBoxItem Content="Ring" Tag="Ring" />
+                                        <ComboBoxItem Content="Chori" Tag="Chori" />
+                                        <ComboBoxItem Content="Other" Tag="Other" />
+                                    </ComboBox>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -477,6 +463,551 @@
                                              TextBlock.FontSize="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
                                 </Grid>
                             </Border>
+                        </Grid>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Multi Test Tab (Second Tab) -->
+            <TabItem Header="Multi Test" x:Name="multiTestTab" FontSize="38" FontWeight="Bold" Width="180">
+                <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50*" MinWidth="420" />
+                            <ColumnDefinition Width="50*" MinWidth="420" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Top Selector Bar (Full Width across Col 0 & Col 1) -->
+                        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="10" Margin="12,10,12,6" Padding="12,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Group 1: Metal Type (Gold / Silver) -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="Metal / دھات:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,8,0" />
+                                    <RadioButton x:Name="radioGoldMulti" GroupName="MetalGroupMulti" Style="{StaticResource CardRadioButton}" IsChecked="True" Checked="metalRadioMulti_Checked">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Image Source="/img/metal_gold.png" Width="30" Height="30" Margin="0,0,6,0" />
+                                            <TextBlock Text="Gold" FontSize="18" FontWeight="Bold" Foreground="#B45309" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </RadioButton>
+                                    <RadioButton x:Name="radioSilverMulti" GroupName="MetalGroupMulti" Style="{StaticResource CardRadioButton}" IsChecked="False" Checked="metalRadioMulti_Checked">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Image Source="/img/metal_silver.png" Width="30" Height="30" Margin="0,0,6,0" />
+                                            <TextBlock Text="Silver" FontSize="18" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </RadioButton>
+                                </StackPanel>
+
+                                <!-- Group 2: Slip Size (Large / Small) -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="Slip Size / پرنٹ سائز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,8,0" />
+                                    <RadioButton x:Name="radioSlipLargeMulti" GroupName="SlipSizeGroupMulti" Style="{StaticResource CardRadioButton}" IsChecked="True" Checked="slipSizeRadio_Checked">
+                                        <TextBlock Text="Large (80mm)" FontSize="16" FontWeight="Bold" Foreground="#0369A1" VerticalAlignment="Center" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="radioSlipSmallMulti" GroupName="SlipSizeGroupMulti" Style="{StaticResource CardRadioButton}" IsChecked="False" Checked="slipSizeRadio_Checked">
+                                        <TextBlock Text="Small (58mm)" FontSize="16" FontWeight="Bold" Foreground="#0369A1" VerticalAlignment="Center" />
+                                    </RadioButton>
+                                </StackPanel>
+
+                                <!-- Group 3: Item Type Dropdown -->
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <TextBlock Text="Item / چیز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,10,0" />
+                                    <ComboBox x:Name="itemTypeDropdownMulti" Width="180" Height="42" FontSize="18" FontWeight="Bold">
+                                        <ComboBoxItem Content="-- None / کوئی نہیں --" IsSelected="True" Tag="" />
+                                        <ComboBoxItem Content="Set" Tag="Set" />
+                                        <ComboBoxItem Content="Tops" Tag="Tops" />
+                                        <ComboBoxItem Content="Chain" Tag="Chain" />
+                                        <ComboBoxItem Content="Ring" Tag="Ring" />
+                                        <ComboBoxItem Content="Chori" Tag="Chori" />
+                                        <ComboBoxItem Content="Other" Tag="Other" />
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Left Section (50% Width) -->
+                        <Grid Grid.Row="1" Grid.Column="0" Margin="12,6,6,6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="220" MaxWidth="285" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Today Gold Rate (Row 0) -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Today Gold Rate / " FontWeight="Bold" />
+                                <Run Text="آج کا ریٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <Grid Grid.Row="0" Grid.Column="1" Margin="0,4,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="80" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="goldRateTextboxMulti" Grid.Column="0" LostFocus="goldRateTextboxMulti_LostFocus" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" Padding="4,2,4,2" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="goldRateTextboxMulti_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBlock Grid.Column="1" Text=" - " VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Margin="6,0,6,0" Foreground="#64748B" />
+                                <TextBox x:Name="goldRateDiffTextboxMulti" Grid.Column="2" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" Padding="4,2,4,2" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="goldRateDiffTextboxMulti_TextChanged" TextBlock.FontSize="24"/>
+                            </Grid>
+
+                            <!-- Select Customer (Row 1) -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Select Customer / " FontWeight="Bold" />
+                                <Run Text="کسٹمر:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <ComboBox x:Name="customersMulti" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" IsEditable="True" Height="42" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24" FontSize="20" FontWeight="Bold"/>
+
+                            <!-- Weight (Row 2) -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Weight / " FontWeight="Bold" />
+                                <Run Text="وزن:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <TextBox x:Name="weightInputTextboxMulti" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="weightTakaMulti_TextChanged" TextBlock.FontSize="24"/>
+
+                            <!-- Taka (Row 3) -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Taka / " FontWeight="Bold" />
+                                <Run Text="ٹانکہ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <TextBox x:Name="takaTextboxMulti" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="weightTakaMulti_TextChanged" TextBlock.FontSize="24"/>
+
+                            <!-- Total Weight (Row 4) -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Total Weight / " FontWeight="Bold" />
+                                <Run Text="کل وزن:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <TextBox x:Name="totalWeightTextboxMulti" Grid.Row="4" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="testTabInputsMulti_TextChanged" TextBlock.FontSize="24" IsEnabled="False" Background="#F1F5F9" Foreground="#0F172A"/>
+
+                            <!-- Result (Ratti) (Row 5) -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Result (Ratti) / " FontWeight="Bold" />
+                                <Run Text="رزلٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <TextBox x:Name="resultTextboxMulti" Grid.Row="5" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="testTabInputsMulti_TextChanged" TextBlock.FontSize="24"/>
+
+                            <!-- Pure Gold (Row 6) -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Pure Gold / " FontWeight="Bold" />
+                                <Run Text="خالص سونا:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <TextBox x:Name="pureGoldTextboxMulti" Grid.Row="6" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" IsEnabled="False" TextBlock.FontSize="24"/>
+
+                            <!-- Labor Charges (Row 7) -->
+                            <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                                <Run Text="Labor Charges / " FontWeight="Bold" />
+                                <Run Text="مزدوری:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
+                            </TextBlock>
+                            <TextBox x:Name="laborTextboxMulti" Grid.Row="7" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" LostFocus="laborTextboxMulti_LostFocus" TextChanged="laborTextboxMulti_TextChanged" TextBlock.FontSize="24"/>
+
+                            <!-- Bottom Cash Cards (Row 8) -->
+                            <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Card 1: Cash Without Labor -->
+                                <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="8" Padding="6,4">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Margin="2,0,2,2" VerticalAlignment="Center" TextAlignment="Center" FontSize="15.5" FontWeight="Bold" Foreground="#334155">
+                                            <Run Text="Cash Without Labor / " FontWeight="Bold" />
+                                            <Run Text="کیش - بغیر مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="19" FontWeight="Bold" />
+                                        </TextBlock>
+                                        <TextBox x:Name="grossPureGoldCashTextboxMulti" Height="44" Text="0" FontSize="22" FontWeight="Bold" Foreground="#0F172A" Background="#FFFFFF" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" BorderThickness="1" BorderBrush="#CBD5E1"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Card 2: Cash With Labor -->
+                                <Border Grid.Column="2" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1.5" CornerRadius="8" Padding="6,4">
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Margin="2,0,2,2" VerticalAlignment="Center" TextAlignment="Center" FontSize="15.5" FontWeight="Bold" Foreground="#166534">
+                                            <Run Text="Cash With Labor / " FontWeight="Bold" />
+                                            <Run Text="کیش - بمعہ مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="19" FontWeight="Bold" />
+                                        </TextBlock>
+                                        <TextBox x:Name="totalPureGoldCashTextboxMulti" Height="44" Text="0" FontSize="22" FontWeight="Bold" Foreground="#059669" Background="#FFFFFF" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" BorderThickness="1.5" BorderBrush="#86EFAC"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Add Item to Batch Button (Row 9) -->
+                            <Button x:Name="addBatchItemBtn" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Height="48" Margin="0,10,0,0" Background="#059669" BorderBrush="#047857" Click="addBatchItemBtn_Click" Cursor="Hand">
+                                <TextBlock FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center">
+                                    <Run Text="+ Add Item to Batch / " FontWeight="Bold" />
+                                    <Run Text="فہرست میں شامل کریں" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="24" FontWeight="Bold" />
+                                </TextBlock>
+                            </Button>
+                        </Grid>
+
+                        <!-- Right Section (50% Width) -->
+                        <Grid Grid.Row="1" Grid.Column="1" Margin="6,6,12,6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Conversion Column Headers (Row 0) -->
+                            <Grid Grid.Row="0" Margin="0,4,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155">
+                                    <Run Text="Sample Wt / " FontWeight="Bold" />
+                                    <Run Text="وزن سیمپل" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
+                                </TextBlock>
+                                <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155">
+                                    <Run Text="Result Wt / " FontWeight="Bold" />
+                                    <Run Text="وزن رزلٹ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
+                                </TextBlock>
+                            </Grid>
+
+                            <!-- Conversion Inputs (Row 1) -->
+                            <Grid Grid.Row="1" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="sampleWeightTextboxMulti" Grid.Column="0" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="sampleWeightMulti_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBox x:Name="resultWeightTextboxMulti" Grid.Column="2" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="resultWeightMulti_TextChanged" TextBlock.FontSize="24"/>
+                            </Grid>
+
+                            <!-- Testing Helper Pairs (Row 2) -->
+                            <Grid Grid.Row="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Header: Karat vs Ratti -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,2,0,2">
+                                    <Run Text="Karat / " FontWeight="Bold" />
+                                    <Run Text="کیریٹ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,2,0,2">
+                                    <Run Text="Ratti / " FontWeight="Bold" />
+                                    <Run Text="رتی" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
+                                </TextBlock>
+
+                                <!-- Inputs: Karat vs Ratti -->
+                                <TextBox x:Name="karatInputTextboxMulti" Grid.Row="1" Grid.Column="0" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="karatInputMulti_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBox x:Name="rattiConversionTextboxMulti" Grid.Row="1" Grid.Column="2" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="rattiConversionMulti_TextChanged" TextBlock.FontSize="24"/>
+
+                                <!-- Header: Purity % vs Ratti -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,4,0,2">
+                                    <Run Text="Purity % / " FontWeight="Bold" />
+                                    <Run Text="فیصد خالص" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
+                                </TextBlock>
+                                <TextBlock Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,4,0,2">
+                                    <Run Text="Ratti / " FontWeight="Bold" />
+                                    <Run Text="رتی" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
+                                </TextBlock>
+
+                                <!-- Inputs: Purity % vs Ratti -->
+                                <TextBox x:Name="purityPercentTextboxMulti" Grid.Row="3" Grid.Column="0" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="purityPercentMulti_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBox x:Name="purityRattiResultTextboxMulti" Grid.Row="3" Grid.Column="2" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="purityRattiResultMulti_TextChanged" TextBlock.FontSize="24"/>
+                            </Grid>
+
+                            <!-- Notes Card with Live Sum & Average (Row 3) -->
+                            <Border Grid.Row="3" Margin="0,8,0,0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" MinHeight="90" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Notes Header -->
+                                    <TextBlock Grid.Row="0" Margin="0,0,0,6" FontSize="22" FontWeight="Bold" Foreground="#334155">
+                                        <Run Text="Notes / " FontWeight="Bold" />
+                                        <Run Text="نوٹ (Lines for Sum &amp; Avg):" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" FontWeight="Bold" />
+                                    </TextBlock>
+
+                                    <!-- Multiline Notes TextBox -->
+                                    <TextBox x:Name="notesTextboxMulti" Grid.Row="1" FontSize="20" FontWeight="Bold"
+                                             AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                             Padding="8" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1"
+                                             TextChanged="notesTextboxMulti_TextChanged"
+                                             TextBlock.FontSize="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+
+                                    <!-- Live Status Bar: Sum & Average -->
+                                    <Border Grid.Row="2" Background="#F1F5F9" CornerRadius="6" Padding="10,6" Margin="0,8,0,0" BorderBrush="#CBD5E1" BorderThickness="1">
+                                        <Grid>
+                                            <TextBlock Text="Live Calculation / لائیو حساب:" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Left" />
+                                            <TextBlock x:Name="notesAvgSumTextMulti" Text="Lines: 0 | Sum: 0.00 | Avg: 0.00" HorizontalAlignment="Right" FontSize="18" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Batch Items Grid & Grand Totals Section (Row 2, Spans Col 0 & Col 1) -->
+                        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="12,12,12,12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Table Header Title -->
+                            <TextBlock Grid.Row="0" Text="Tested Products in Batch / بیچ میں شامل آئٹمز:" FontSize="22" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8" />
+
+                            <!-- Batch DataGrid -->
+                            <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8">
+                                <DataGrid x:Name="batchDataGrid"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          CanUserDeleteRows="False"
+                                          IsReadOnly="True"
+                                          GridLinesVisibility="Horizontal"
+                                          HorizontalGridLinesBrush="#E2E8F0"
+                                          VerticalGridLinesBrush="Transparent"
+                                          RowHeight="38"
+                                          FontSize="16"
+                                          FontWeight="Bold"
+                                          HeadersVisibility="Column"
+                                          Background="#FFFFFF"
+                                          AlternatingRowBackground="#F8FAFC"
+                                          BorderThickness="0"
+                                          MaxHeight="260">
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="#F1F5F9" />
+                                            <Setter Property="Foreground" Value="#334155" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="FontSize" Value="15" />
+                                            <Setter Property="Height" Value="38" />
+                                            <Setter Property="Padding" Value="4,0" />
+                                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                            <Setter Property="BorderBrush" Value="#CBD5E1" />
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+                                    <DataGrid.Columns>
+                                        <!-- Col 0: Index -->
+                                        <DataGridTextColumn Header="#" Binding="{Binding Index}" Width="45">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Center" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 1: Item -->
+                                        <DataGridTextColumn Header="Item" Binding="{Binding ItemDisplay}" Width="120">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                    <Setter Property="Foreground" Value="#B45309" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 2: Gross Weight -->
+                                        <DataGridTextColumn Header="Weight" Binding="{Binding WeightDisplay}" Width="90">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Right" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 3: Taka -->
+                                        <DataGridTextColumn Header="Taka" Binding="{Binding TakaDisplay}" Width="85">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Right" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 4: Total Weight -->
+                                        <DataGridTextColumn Header="Total Wt" Binding="{Binding TotalWeightDisplay}" Width="90">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Right" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 5: Ratti -->
+                                        <DataGridTextColumn Header="Ratti" Binding="{Binding RattiDisplay}" Width="65">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Center" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 6: Karat -->
+                                        <DataGridTextColumn Header="Karat" Binding="{Binding KaratDisplay}" Width="65">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Center" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 7: Pure Gold -->
+                                        <DataGridTextColumn Header="Pure Gold" Binding="{Binding PureGoldDisplay}" Width="95">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Right" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 8: Labor -->
+                                        <DataGridTextColumn Header="Labor" Binding="{Binding LaborDisplay}" Width="75">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Right" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 9: Cash (Rs) -->
+                                        <DataGridTextColumn Header="Cash (Rs)" Binding="{Binding CashDisplay}" Width="110">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Setter Property="TextAlignment" Value="Right" />
+                                                    <Setter Property="Padding" Value="4,0" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                    <Setter Property="Foreground" Value="#059669" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+
+                                        <!-- Col 10: Action (Remove) -->
+                                        <DataGridTemplateColumn Header="Action" Width="90">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Remove" 
+                                                            Height="28" 
+                                                            Padding="6,0" 
+                                                            FontSize="12" 
+                                                            FontWeight="Bold" 
+                                                            Background="#DC2626" 
+                                                            Foreground="#FFFFFF" 
+                                                            BorderBrush="#B91C1C" 
+                                                            Click="removeBatchItem_Click" 
+                                                            Tag="{Binding Index}" 
+                                                            Cursor="Hand" 
+                                                            VerticalAlignment="Center" 
+                                                            HorizontalAlignment="Center">
+                                                        <Button.Resources>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="CornerRadius" Value="4"/>
+                                                            </Style>
+                                                        </Button.Resources>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+
+                            <!-- Grand Summary Totals Cards (Row 2) -->
+                            <Grid Grid.Row="2" Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="1.3*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Total Weight Card -->
+                                <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="6,6">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="Total Weight / کل وزن" FontSize="14" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="batchTotalWeightDisplay" Text="0.000g" FontSize="20" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Total Pure Gold Card -->
+                                <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="6,6">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="Total Pure / خالص سونا" FontSize="14" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="batchTotalPureGoldDisplay" Text="0.000g" FontSize="20" FontWeight="Bold" Foreground="#B45309" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Total Labor Card -->
+                                <Border Grid.Column="4" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="6,6">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="Total Labor / کل مزدوری" FontSize="14" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="batchTotalLaborDisplay" Text="Rs. 0" FontSize="20" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Grand Total Cash Card -->
+                                <Border Grid.Column="6" Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="2" CornerRadius="8" Padding="6,6">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="TOTAL CASH / کل رقم" FontSize="15" FontWeight="Bold" Foreground="#166534" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="batchTotalCashDisplay" Text="Rs. 0" FontSize="24" FontWeight="Bold" Foreground="#059669" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </ScrollViewer>

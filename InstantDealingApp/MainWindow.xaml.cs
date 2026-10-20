@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -109,14 +110,56 @@ namespace InstantDealingApp
                 {
                     string outPath = args[i + 1];
                     string? historyOutPath = (i + 2 < args.Length && !args[i + 2].StartsWith("--")) ? args[i + 2] : null;
+                    string? receiptOutPath = null;
+
+                    for (int j = 0; j < args.Length; j++)
+                    {
+                        if (args[j] == "--receipt" && j + 1 < args.Length)
+                        {
+                            receiptOutPath = args[j + 1];
+                            break;
+                        }
+                    }
 
                     Dispatcher.InvokeAsync(async () =>
                     {
+                        // Set realistic sample data for screenshots
+                        if (goldRateTextboxTest != null) goldRateTextboxTest.Text = "285,000";
+                        if (customersTest != null) customersTest.Text = "Ahsan Bhai";
+                        if (radioGold != null) radioGold.IsChecked = true;
+                        if (radioChori != null) radioChori.IsChecked = true;
+                        if (weightInputTextbox != null) weightInputTextbox.Text = "10.500";
+                        if (takaTextbox != null) takaTextbox.Text = "0.500";
+                        if (resultTextbox != null) resultTextbox.Text = "1.50";
+                        if (doPrintWeight != null) doPrintWeight.IsChecked = true;
+                        if (doPrintTaka != null) doPrintTaka.IsChecked = true;
+                        if (doPrintTotalWeight != null) doPrintTotalWeight.IsChecked = true;
+                        if (doPrintResult != null) doPrintResult.IsChecked = true;
+                        if (doPrintPureGold != null) doPrintPureGold.IsChecked = true;
+                        if (doPrintLabor != null) doPrintLabor.IsChecked = true;
+                        if (doPrintTotalPureGoldCash != null) doPrintTotalPureGoldCash.IsChecked = true;
+                        if (doPrintGoldRateTest != null) doPrintGoldRateTest.IsChecked = true;
+                        if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = true;
+                        updateTestCalculations();
+
                         await System.Threading.Tasks.Task.Delay(700);
                         CaptureVisualToFile(this, outPath);
 
+                        if (!string.IsNullOrEmpty(receiptOutPath))
+                        {
+                            FlowDocument receiptDoc = CreateFlowDocument(DateTime.Now);
+                            CaptureReceiptDocumentToFile(receiptDoc, receiptOutPath);
+                        }
+
                         if (!string.IsNullOrEmpty(historyOutPath) && historyTab != null)
                         {
+                            // Ensure a sample record is recorded in history so it displays in table
+                            if (_allPrintRecords.Count == 0 || !_allPrintRecords.Any(r => r.CustomerName == "Ahsan Bhai"))
+                            {
+                                FlowDocument sampleDoc = CreateFlowDocument(DateTime.Now);
+                                RecordCurrentPrint(DateTime.Now, sampleDoc);
+                            }
+
                             mainTabControl.SelectedItem = historyTab;
                             await System.Threading.Tasks.Task.Delay(700);
                             CaptureVisualToFile(this, historyOutPath);
@@ -127,6 +170,46 @@ namespace InstantDealingApp
                     break;
                 }
             }
+        }
+
+        private void CaptureReceiptDocumentToFile(FlowDocument doc, string filePath)
+        {
+            try
+            {
+                FlowDocumentScrollViewer viewer = new FlowDocumentScrollViewer
+                {
+                    Document = doc,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    Background = Brushes.White,
+                    Width = 310
+                };
+                Border card = new Border
+                {
+                    Background = Brushes.White,
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)),
+                    BorderThickness = new Thickness(1.5),
+                    CornerRadius = new CornerRadius(8),
+                    Padding = new Thickness(6),
+                    Child = viewer,
+                    Width = 322
+                };
+                card.Measure(new Size(330, 2000));
+                card.Arrange(new Rect(0, 0, 322, card.DesiredSize.Height));
+                card.UpdateLayout();
+
+                int h = Math.Max(420, (int)card.DesiredSize.Height);
+                RenderTargetBitmap rtb = new RenderTargetBitmap(322, h, 96, 96, PixelFormats.Pbgra32);
+                rtb.Render(card);
+
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(rtb));
+                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    encoder.Save(fs);
+                }
+            }
+            catch { }
         }
 
         private void CaptureVisualToFile(Visual visual, string filePath)
@@ -170,6 +253,8 @@ namespace InstantDealingApp
                 // XRF Test Tab
                 if (doPrintGoldRateTest != null) settings["doPrintGoldRateTest"] = doPrintGoldRateTest.IsChecked ?? false;
                 if (doPrintCustomerNameTest != null) settings["doPrintCustomerNameTest"] = doPrintCustomerNameTest.IsChecked ?? false;
+                if (doPrintWeight != null) settings["doPrintWeight"] = doPrintWeight.IsChecked ?? false;
+                if (doPrintTaka != null) settings["doPrintTaka"] = doPrintTaka.IsChecked ?? false;
                 if (doPrintTotalWeight != null) settings["doPrintTotalWeight"] = doPrintTotalWeight.IsChecked ?? false;
                 if (doPrintResult != null) settings["doPrintResult"] = doPrintResult.IsChecked ?? false;
                 if (doPrintPureGold != null) settings["doPrintPureGold"] = doPrintPureGold.IsChecked ?? false;
@@ -200,6 +285,8 @@ namespace InstantDealingApp
                         // XRF Test Tab
                         if (settings.TryGetValue("doPrintGoldRateTest", out bool val1) && doPrintGoldRateTest != null) doPrintGoldRateTest.IsChecked = val1;
                         if (settings.TryGetValue("doPrintCustomerNameTest", out bool val2) && doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = val2;
+                        if (settings.TryGetValue("doPrintWeight", out bool valWeight) && doPrintWeight != null) doPrintWeight.IsChecked = valWeight;
+                        if (settings.TryGetValue("doPrintTaka", out bool valTaka) && doPrintTaka != null) doPrintTaka.IsChecked = valTaka;
                         if (settings.TryGetValue("doPrintTotalWeight", out bool val3) && doPrintTotalWeight != null) doPrintTotalWeight.IsChecked = val3;
                         if (settings.TryGetValue("doPrintResult", out bool val4) && doPrintResult != null) doPrintResult.IsChecked = val4;
                         if (settings.TryGetValue("doPrintPureGold", out bool val5) && doPrintPureGold != null) doPrintPureGold.IsChecked = val5;
@@ -252,7 +339,7 @@ namespace InstantDealingApp
                         AppendUniqueName(customersTest.Text);
                         if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = true;
                     }
-                    totalWeightTextbox.Focus();
+                    weightInputTextbox.Focus();
                     e.Handled = true;
                     return;
                 }
@@ -274,6 +361,18 @@ namespace InstantDealingApp
                 if (focusedElement == goldRateDiffTextbox)
                 {
                     customersTest.Focus();
+                    e.Handled = true;
+                    return;
+                }
+                if (focusedElement == weightInputTextbox)
+                {
+                    takaTextbox.Focus();
+                    e.Handled = true;
+                    return;
+                }
+                if (focusedElement == takaTextbox)
+                {
+                    resultTextbox.Focus();
                     e.Handled = true;
                     return;
                 }
@@ -309,7 +408,7 @@ namespace InstantDealingApp
                     focusedElement == purityPercentTextbox ||
                     focusedElement == purityRattiResultTextbox)
                 {
-                    totalWeightTextbox.Focus();
+                    weightInputTextbox.Focus();
                     e.Handled = true;
                     return;
                 }
@@ -339,6 +438,10 @@ namespace InstantDealingApp
                 case ComboBox comboBox when comboBox == customersTest:
                     return doPrintCustomerNameTest?.IsChecked ?? false;
 
+                case TextBox text when text == weightInputTextbox:
+                    return doPrintWeight?.IsChecked ?? false;
+                case TextBox text when text == takaTextbox:
+                    return doPrintTaka?.IsChecked ?? false;
                 case TextBox text when text == totalWeightTextbox:
                     return doPrintTotalWeight?.IsChecked ?? false;
                 case TextBox text when text == resultTextbox:
@@ -370,8 +473,8 @@ namespace InstantDealingApp
                 if (saveButtonText != null)
                 {
                     saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Print / "));
-                    saveButtonText.Inlines.Add(new Run("پرنٹ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 22 });
+                    saveButtonText.Inlines.Add(new Run("Print / ") { FontWeight = FontWeights.Bold });
+                    saveButtonText.Inlines.Add(new Run("پرنٹ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
                 }
             }
             else if (mainTabControl.SelectedItem == historyTab)
@@ -381,8 +484,8 @@ namespace InstantDealingApp
                 if (saveButtonText != null)
                 {
                     saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Print Selected / "));
-                    saveButtonText.Inlines.Add(new Run("منتخب پرنٹ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 22 });
+                    saveButtonText.Inlines.Add(new Run("Print Selected / ") { FontWeight = FontWeights.Bold });
+                    saveButtonText.Inlines.Add(new Run("منتخب پرنٹ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
                 }
             }
         }
@@ -442,6 +545,10 @@ namespace InstantDealingApp
 
                 record.TabType = "Test";
                 record.CustomerName = CapitalizeCustomerName(customersTest?.Text ?? "");
+                record.Metal = GetSelectedMetal();
+                record.ItemType = GetSelectedItemType();
+                record.Weight = NumberFormattingHelper.GetCleanDouble(weightInputTextbox);
+                record.Taka = NumberFormattingHelper.GetCleanDouble(takaTextbox);
                 record.TotalWeight = NumberFormattingHelper.GetCleanDouble(totalWeightTextbox);
                 record.PureGold = NumberFormattingHelper.GetCleanDouble(pureGoldTextbox);
                 record.Labor = NumberFormattingHelper.GetCleanDouble(laborTextbox);
@@ -503,6 +610,10 @@ namespace InstantDealingApp
                     Id = r.Id,
                     Timestamp = r.Timestamp,
                     CustomerName = string.IsNullOrWhiteSpace(r.CustomerName) ? "-" : r.CustomerName,
+                    Metal = string.IsNullOrWhiteSpace(r.Metal) ? "Gold" : r.Metal,
+                    ItemType = r.ItemType ?? "",
+                    WeightValue = r.Weight,
+                    TakaValue = r.Taka,
                     RattiValue = r.Ratti,
                     KaratValue = r.Karat,
                     PurityPercentValue = r.PurityPercent,
@@ -572,6 +683,60 @@ namespace InstantDealingApp
             }
         }
 
+        private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent)
+                    return parent;
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
+
+        private void PromptAndOpenRecord(string recordId)
+        {
+            if (string.IsNullOrWhiteSpace(recordId)) return;
+
+            var record = _allPrintRecords.FirstOrDefault(r => r.Id == recordId);
+            if (record == null)
+            {
+                _allPrintRecords = LoadPrintHistory();
+                record = _allPrintRecords.FirstOrDefault(r => r.Id == recordId);
+            }
+
+            if (record == null) return;
+
+            string customer = string.IsNullOrWhiteSpace(record.CustomerName) || record.CustomerName == "-"
+                ? "this transaction"
+                : record.CustomerName;
+
+            MessageBoxResult res = MessageBox.Show(
+                $"Do you want to open the record for '{customer}' in the Test tab?\n\nThis will load all details into the Test tab so you can edit and reprint.\n\nکیا آپ یہ ریکارڈ ٹیسٹ ٹیب میں کھولنا چاہتے ہیں؟",
+                "Open Record / ریکارڈ کھولیں",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.Yes);
+
+            if (res == MessageBoxResult.Yes)
+            {
+                PopulateTestTabFromRecord(record);
+                updateTestCalculations();
+                if (mainTabControl != null && testTab != null)
+                {
+                    mainTabControl.SelectedItem = testTab;
+                }
+            }
+        }
+
+        private void historyRowOpen_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string recordId && !string.IsNullOrWhiteSpace(recordId))
+            {
+                PromptAndOpenRecord(recordId);
+            }
+        }
+
         private void historyRowPrint_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is string recordId && !string.IsNullOrWhiteSpace(recordId))
@@ -592,11 +757,39 @@ namespace InstantDealingApp
             }
         }
 
+        private void historyDataGrid_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var dep = e.OriginalSource as DependencyObject;
+            if (dep == null) return;
+
+            // If user clicked inside a Button (Open or Print), let the Button's Click event handle it
+            if (FindVisualParent<Button>(dep) != null) return;
+
+            // If user clicked column header (sorting), ignore
+            if (FindVisualParent<DataGridColumnHeader>(dep) != null) return;
+
+            // If user clicked a scrollbar, ignore
+            if (FindVisualParent<ScrollBar>(dep) != null) return;
+
+            // Identify clicked row
+            var row = FindVisualParent<DataGridRow>(dep);
+            if (row != null && row.Item is PrintRecordDisplay display)
+            {
+                PromptAndOpenRecord(display.Id);
+            }
+        }
+
         private void historyDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            var dep = e.OriginalSource as DependencyObject;
+            if (dep == null) return;
+            if (FindVisualParent<Button>(dep) != null) return;
+            if (FindVisualParent<DataGridColumnHeader>(dep) != null) return;
+
             if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
             {
-                PrintHistoryRecordById(display.Id);
+                PromptAndOpenRecord(display.Id);
+                e.Handled = true;
             }
         }
 
@@ -606,7 +799,7 @@ namespace InstantDealingApp
             {
                 if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
                 {
-                    PrintHistoryRecordById(display.Id);
+                    PromptAndOpenRecord(display.Id);
                     e.Handled = true;
                 }
             }
@@ -614,16 +807,8 @@ namespace InstantDealingApp
 
         private void historyDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isApplyingHistoryFilters) return;
-
-            if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
-            {
-                var record = _allPrintRecords.FirstOrDefault(r => r.Id == display.Id);
-                if (record != null)
-                {
-                    PopulateTestTabFromRecord(record);
-                }
-            }
+            // Row selection changes alone do not overwrite the Test tab.
+            // Populating the Test tab requires user confirmation via PromptAndOpenRecord.
         }
 
         private void PopulateTestTabFromRecord(PrintRecord record)
@@ -636,6 +821,41 @@ namespace InstantDealingApp
                     customersTest.Text = record.CustomerName == "-" ? "" : record.CustomerName;
                     if (doPrintCustomerNameTest != null)
                         doPrintCustomerNameTest.IsChecked = !string.IsNullOrWhiteSpace(record.CustomerName) && record.CustomerName != "-";
+                }
+
+                // Metal radio buttons
+                if (string.Equals(record.Metal, "Silver", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (radioSilver != null) radioSilver.IsChecked = true;
+                    if (radioGold != null) radioGold.IsChecked = false;
+                }
+                else
+                {
+                    if (radioGold != null) radioGold.IsChecked = true;
+                    if (radioSilver != null) radioSilver.IsChecked = false;
+                }
+
+                // Item Type radio buttons
+                if (radioSet != null) radioSet.IsChecked = string.Equals(record.ItemType, "Set", StringComparison.OrdinalIgnoreCase) || string.Equals(record.ItemType, "Necklace", StringComparison.OrdinalIgnoreCase);
+                if (radioTops != null) radioTops.IsChecked = string.Equals(record.ItemType, "Tops", StringComparison.OrdinalIgnoreCase);
+                if (radioChain != null) radioChain.IsChecked = string.Equals(record.ItemType, "Chain", StringComparison.OrdinalIgnoreCase);
+                if (radioRing != null) radioRing.IsChecked = string.Equals(record.ItemType, "Ring", StringComparison.OrdinalIgnoreCase);
+                if (radioChori != null) radioChori.IsChecked = string.Equals(record.ItemType, "Chori", StringComparison.OrdinalIgnoreCase);
+                if (radioOther != null) radioOther.IsChecked = string.Equals(record.ItemType, "Other", StringComparison.OrdinalIgnoreCase);
+
+                if (weightInputTextbox != null)
+                {
+                    double wt = record.Weight > 0 ? record.Weight : record.TotalWeight;
+                    weightInputTextbox.Text = wt > 0 ? wt.ToString("0.000") : "0";
+                    if (doPrintWeight != null)
+                        doPrintWeight.IsChecked = record.Weight > 0;
+                }
+
+                if (takaTextbox != null)
+                {
+                    takaTextbox.Text = record.Taka > 0 ? record.Taka.ToString("0.000") : "0";
+                    if (doPrintTaka != null)
+                        doPrintTaka.IsChecked = record.Taka > 0;
                 }
 
                 if (totalWeightTextbox != null)
@@ -652,6 +872,11 @@ namespace InstantDealingApp
                         doPrintResult.IsChecked = record.Ratti > 0;
                 }
 
+                if (record.Ratti > 0)
+                {
+                    SyncAllPurityFields(record.Ratti, null);
+                }
+
                 if (pureGoldTextbox != null)
                 {
                     pureGoldTextbox.Text = record.PureGold > 0 ? record.PureGold.ToString("F3") : "0.000";
@@ -659,6 +884,7 @@ namespace InstantDealingApp
                         doPrintPureGold.IsChecked = record.PureGold > 0;
                 }
 
+                _isLaborManuallyEdited = true;
                 if (laborTextbox != null)
                 {
                     laborTextbox.Text = record.Labor > 0 ? record.Labor.ToString("N0") : "0";
@@ -757,7 +983,7 @@ namespace InstantDealingApp
             if (!string.IsNullOrWhiteSpace(record.CustomerName) && record.CustomerName != "-")
             {
                 Paragraph customerParagraph = new Paragraph();
-                customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.SemiBold });
+                customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.Bold });
                 customerParagraph.Inlines.Add(new Bold(new Run(record.CustomerName)) { Foreground = Brushes.Black });
                 customerParagraph.TextAlignment = TextAlignment.Left;
                 customerParagraph.FontSize = 16;
@@ -776,10 +1002,17 @@ namespace InstantDealingApp
                 if (hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
                 hasTransactionData = true;
 
+                string metal = !string.IsNullOrWhiteSpace(record.Metal) ? record.Metal : "Gold";
+                string itemType = record.ItemType ?? "";
+                string itemDesc = !string.IsNullOrEmpty(itemType) ? $"{metal} {itemType}" : metal;
+
                 Paragraph testHeader = new Paragraph();
-                testHeader.Inlines.Add(new Underline(new Bold(new Run("TEST TRANSACTION"))));
+                string headerTitle = !string.IsNullOrEmpty(itemDesc) 
+                    ? $"TEST TRANSACTION  •  {itemDesc.ToUpper()}" 
+                    : "TEST TRANSACTION";
+                testHeader.Inlines.Add(new Underline(new Bold(new Run(headerTitle))));
                 testHeader.TextAlignment = TextAlignment.Center;
-                testHeader.FontSize = 18;
+                testHeader.FontSize = 14;
                 testHeader.Margin = new Thickness(0, 8, 0, 5);
                 testHeader.Foreground = Brushes.Black;
                 flowDoc.Blocks.Add(testHeader);
@@ -790,42 +1023,58 @@ namespace InstantDealingApp
 
                 TableRowGroup testRowGroup = new TableRowGroup();
 
+                if (record.Weight > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Weight:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (record.Taka > 0)
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Taka:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Taka:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                    testRowGroup.Rows.Add(row);
+                }
+
                 if (record.TotalWeight > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Total Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.TotalWeight:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Total Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.TotalWeight:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (record.Ratti > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Result (Ratti):")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Ratti:0.###}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Result (Ratti):")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Ratti:0.###}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (record.Karat > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Karat:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Karat:0.##}K")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Karat:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.Karat:0.##}K")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (record.PurityPercent > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Purity:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.PurityPercent:0.##}%")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Purity:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.PurityPercent:0.##}%")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (record.PureGold > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
                     row.Cells.Add(new TableCell(new Paragraph(new Run($"{record.PureGold:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
@@ -833,15 +1082,15 @@ namespace InstantDealingApp
                 if (record.Labor > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Labor Charges:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {record.Labor:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Labor Charges:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {record.Labor:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (record.Cash > 0)
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
                     row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {record.Cash:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
@@ -1133,7 +1382,7 @@ namespace InstantDealingApp
 
         private bool _isSyncingPurity = false;
 
-        private void SyncAllPurityFields(double rattiValue, object sourceControl)
+        private void SyncAllPurityFields(double rattiValue, object? sourceControl)
         {
             if (_isSyncingPurity) return;
             _isSyncingPurity = true;
@@ -1291,6 +1540,65 @@ namespace InstantDealingApp
             updateTestCalculations();
         }
 
+        private void metalRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            // Metal radio button selected
+        }
+
+        private void itemTypeRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            // Item type radio button selected
+        }
+
+        private void itemTypeRadio_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is RadioButton rb && rb.IsChecked == true)
+            {
+                rb.IsChecked = false;
+                e.Handled = true;
+            }
+        }
+
+        private string GetSelectedMetal()
+        {
+            if (radioSilver != null && radioSilver.IsChecked == true) return "Silver";
+            return "Gold";
+        }
+
+        private string GetSelectedItemType()
+        {
+            if (radioSet != null && radioSet.IsChecked == true) return "Set";
+            if (radioTops != null && radioTops.IsChecked == true) return "Tops";
+            if (radioChain != null && radioChain.IsChecked == true) return "Chain";
+            if (radioRing != null && radioRing.IsChecked == true) return "Ring";
+            if (radioChori != null && radioChori.IsChecked == true) return "Chori";
+            if (radioOther != null && radioOther.IsChecked == true) return "Other";
+            return "";
+        }
+
+        private string GetItemDescription()
+        {
+            string metal = GetSelectedMetal();
+            string itemType = GetSelectedItemType();
+            if (!string.IsNullOrEmpty(itemType))
+            {
+                return $"{metal} {itemType}";
+            }
+            return metal;
+        }
+
+        private void weightTaka_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox tb && tb.IsFocused)
+            {
+                if (tb == weightInputTextbox && doPrintWeight != null)
+                    doPrintWeight.IsChecked = true;
+                else if (tb == takaTextbox && doPrintTaka != null)
+                    doPrintTaka.IsChecked = true;
+            }
+            updateTestCalculations();
+        }
+
         private void testTabInputs_TextChanged(object sender, TextChangedEventArgs e)
         {
             var tb = sender as TextBox;
@@ -1351,8 +1659,24 @@ namespace InstantDealingApp
                 string rateText = !string.IsNullOrWhiteSpace(goldRateTextboxTest?.Text) ? goldRateTextboxTest.Text : "0";
                 double.TryParse(rateText.Replace(",", "").Replace(" ", ""), out goldRate);
 
-                if (totalWeightTextbox != null)
-                    double.TryParse(totalWeightTextbox.Text.Replace(",", "").Replace(" ", ""), out totalWeight);
+                double grossWeight = 0;
+                double taka = 0;
+                if (weightInputTextbox != null)
+                    grossWeight = NumberFormattingHelper.GetCleanDouble(weightInputTextbox);
+                if (takaTextbox != null)
+                    taka = NumberFormattingHelper.GetCleanDouble(takaTextbox);
+
+                if (grossWeight > 0 || taka > 0)
+                {
+                    totalWeight = Math.Max(0, grossWeight - taka);
+                    if (totalWeightTextbox != null)
+                        totalWeightTextbox.Text = totalWeight.ToString("0.000");
+                }
+                else
+                {
+                    if (totalWeightTextbox != null)
+                        double.TryParse(totalWeightTextbox.Text.Replace(",", "").Replace(" ", ""), out totalWeight);
+                }
 
                 if (resultTextbox != null)
                 {
@@ -1488,6 +1812,8 @@ namespace InstantDealingApp
         private void SetAllCheckBoxesState(bool isChecked)
         {
             // Test Tab CheckBoxes
+            if (doPrintWeight != null) doPrintWeight.IsChecked = isChecked;
+            if (doPrintTaka != null) doPrintTaka.IsChecked = isChecked;
             if (doPrintTotalWeight != null) doPrintTotalWeight.IsChecked = isChecked;
             if (doPrintResult != null) doPrintResult.IsChecked = isChecked;
             if (doPrintPureGold != null) doPrintPureGold.IsChecked = isChecked;
@@ -1530,9 +1856,20 @@ namespace InstantDealingApp
             bool? print = printDlg.ShowDialog();
             if (print != null && (print ?? false))
             {
-                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
-                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
-                RecordCurrentPrint(printTime, doc);
+                try
+                {
+                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
+                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Printing error: {ex.Message}", "Print", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                finally
+                {
+                    RecordCurrentPrint(printTime, doc);
+                    ClearAllTestFields();
+                }
             }
         }
 
@@ -1578,7 +1915,7 @@ namespace InstantDealingApp
             if (!string.IsNullOrWhiteSpace(customerName))
             {
                 Paragraph customerParagraph = new Paragraph();
-                customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.SemiBold });
+                customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.Bold });
                 customerParagraph.Inlines.Add(new Bold(new Run(customerName)) { Foreground = Brushes.Black });
                 customerParagraph.TextAlignment = TextAlignment.Left;
                 customerParagraph.FontSize = 16;
@@ -1589,7 +1926,9 @@ namespace InstantDealingApp
             bool hasTransactionData = false;
 
             // Test Transaction Section
-            bool shouldPrintTestSection = doPrint(totalWeightTextbox) || 
+            bool shouldPrintTestSection = doPrint(weightInputTextbox) ||
+                                         doPrint(takaTextbox) ||
+                                         doPrint(totalWeightTextbox) || 
                                          doPrint(resultTextbox) || 
                                          doPrint(pureGoldTextbox) || 
                                          doPrint(laborTextbox) || 
@@ -1603,10 +1942,17 @@ namespace InstantDealingApp
                 if (hasTransactionData) flowDoc.Blocks.Add(CreateSeparator());
                 hasTransactionData = true;
 
+                string metal = GetSelectedMetal();
+                string itemType = GetSelectedItemType();
+                string itemDesc = !string.IsNullOrEmpty(itemType) ? $"{metal} {itemType}" : metal;
+
                 Paragraph testHeader = new Paragraph();
-                testHeader.Inlines.Add(new Underline(new Bold(new Run("TEST TRANSACTION"))));
+                string headerTitle = !string.IsNullOrEmpty(itemDesc) 
+                    ? $"TEST TRANSACTION  •  {itemDesc.ToUpper()}" 
+                    : "TEST TRANSACTION";
+                testHeader.Inlines.Add(new Underline(new Bold(new Run(headerTitle))));
                 testHeader.TextAlignment = TextAlignment.Center;
-                testHeader.FontSize = 18;
+                testHeader.FontSize = 14;
                 testHeader.Margin = new Thickness(0, 8, 0, 5);
                 testHeader.Foreground = Brushes.Black;
                 flowDoc.Blocks.Add(testHeader);
@@ -1617,42 +1963,58 @@ namespace InstantDealingApp
 
                 TableRowGroup testRowGroup = new TableRowGroup();
 
+                if (doPrint(weightInputTextbox) && !string.IsNullOrWhiteSpace(weightInputTextbox?.Text) && weightInputTextbox.Text != "0")
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{weightInputTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                    testRowGroup.Rows.Add(row);
+                }
+
+                if (doPrint(takaTextbox) && !string.IsNullOrWhiteSpace(takaTextbox?.Text) && takaTextbox.Text != "0")
+                {
+                    TableRow row = new TableRow();
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Taka:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{takaTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                    testRowGroup.Rows.Add(row);
+                }
+
                 if (doPrint(totalWeightTextbox) && !string.IsNullOrWhiteSpace(totalWeightTextbox?.Text) && totalWeightTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Total Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{totalWeightTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Total Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{totalWeightTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(resultTextbox) && !string.IsNullOrWhiteSpace(resultTextbox?.Text) && resultTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Result (Ratti):")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run(resultTextbox.Text)) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Result (Ratti):")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run(resultTextbox.Text)) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(karatInputTextbox) && !string.IsNullOrWhiteSpace(karatInputTextbox?.Text) && karatInputTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Karat:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{karatInputTextbox.Text}K")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Karat:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{karatInputTextbox.Text}K")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(purityPercentTextbox) && !string.IsNullOrWhiteSpace(purityPercentTextbox?.Text) && purityPercentTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Purity:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{purityPercentTextbox.Text}%")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Purity:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"{purityPercentTextbox.Text}%")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(pureGoldTextbox) && !string.IsNullOrWhiteSpace(pureGoldTextbox?.Text) && pureGoldTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
                     row.Cells.Add(new TableCell(new Paragraph(new Run($"{pureGoldTextbox.Text}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
@@ -1660,23 +2022,23 @@ namespace InstantDealingApp
                 if (doPrint(laborTextbox) && !string.IsNullOrWhiteSpace(laborTextbox?.Text) && laborTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Labor Charges:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {laborTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Labor Charges:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {laborTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(grossPureGoldCashTextbox) && !string.IsNullOrWhiteSpace(grossPureGoldCashTextbox?.Text) && grossPureGoldCashTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash W/O Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
-                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {grossPureGoldCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash W/O Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {grossPureGoldCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
 
                 if (doPrint(totalPureGoldCashTextbox) && !string.IsNullOrWhiteSpace(totalPureGoldCashTextbox?.Text) && totalPureGoldCashTextbox.Text != "0")
                 {
                     TableRow row = new TableRow();
-                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash W/ Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.SemiBold }));
+                    row.Cells.Add(new TableCell(new Paragraph(new Run("Cash W/ Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
                     row.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalPureGoldCashTextbox.Text}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                     testRowGroup.Rows.Add(row);
                 }
@@ -1842,31 +2204,59 @@ namespace InstantDealingApp
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
+            ClearAllTestFields();
+        }
+
+        public void ClearAllTestFields()
+        {
             if (goldRateTextboxTest != null) goldRateTextboxTest.Text = "0";
+            if (goldRateDiffTextbox != null) goldRateDiffTextbox.Text = "0";
+            _rawBaseGoldRate = 0;
+
             if (customersTest != null)
             {
                 customersTest.SelectedIndex = -1;
                 customersTest.Text = "";
             }
 
-            totalWeightTextbox.Text = "0";
-            resultTextbox.Text = "0";
-            pureGoldTextbox.Text = "0";
-            laborTextbox.Text = "0";
+            if (radioGold != null) radioGold.IsChecked = true;
+            if (radioSilver != null) radioSilver.IsChecked = false;
+            if (radioSet != null) radioSet.IsChecked = false;
+            if (radioTops != null) radioTops.IsChecked = false;
+            if (radioChain != null) radioChain.IsChecked = false;
+            if (radioRing != null) radioRing.IsChecked = false;
+            if (radioChori != null) radioChori.IsChecked = false;
+            if (radioOther != null) radioOther.IsChecked = false;
+
+            if (weightInputTextbox != null) weightInputTextbox.Text = "0";
+            if (takaTextbox != null) takaTextbox.Text = "0";
+            if (totalWeightTextbox != null) totalWeightTextbox.Text = "0";
+
+            if (resultTextbox != null) resultTextbox.Text = "0";
+            if (pureGoldTextbox != null) pureGoldTextbox.Text = "0";
+            if (laborTextbox != null) laborTextbox.Text = "0";
             _isLaborManuallyEdited = false;
-            grossPureGoldCashTextbox.Text = "0";
-            totalPureGoldCashTextbox.Text = "0";
+
+            if (grossPureGoldCashTextbox != null) grossPureGoldCashTextbox.Text = "0";
+            if (totalPureGoldCashTextbox != null) totalPureGoldCashTextbox.Text = "0";
+
             if (notesTextboxTest != null) notesTextboxTest.Text = "";
+
             if (sampleWeightTextbox != null) sampleWeightTextbox.Text = "0";
             if (resultWeightTextbox != null) resultWeightTextbox.Text = "0";
             if (karatInputTextbox != null) karatInputTextbox.Text = "0";
             if (rattiConversionTextbox != null) rattiConversionTextbox.Text = "0";
             if (purityPercentTextbox != null) purityPercentTextbox.Text = "0";
             if (purityRattiResultTextbox != null) purityRattiResultTextbox.Text = "0";
-            if (goldRateDiffTextbox != null) goldRateDiffTextbox.Text = "0";
+
+            if (doPrintWeight != null) doPrintWeight.IsChecked = false;
+            if (doPrintTaka != null) doPrintTaka.IsChecked = false;
             if (doPrintKarat != null) doPrintKarat.IsChecked = false;
             if (doPrintPurityPercent != null) doPrintPurityPercent.IsChecked = false;
-            _rawBaseGoldRate = 0;
+            if (doPrintNotes != null) doPrintNotes.IsChecked = false;
+            if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = false;
+
+            updateTestCalculations();
         }
 
         private void goldRateTextbox_LostFocus(object sender, RoutedEventArgs e)
@@ -1885,6 +2275,10 @@ namespace InstantDealingApp
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public string CustomerName { get; set; } = "";
         public string TabType { get; set; } = "";
+        public string Metal { get; set; } = "Gold";
+        public string ItemType { get; set; } = "";
+        public double Weight { get; set; }
+        public double Taka { get; set; }
         public double Ratti { get; set; }
         public double Karat { get; set; }
         public double PurityPercent { get; set; }
@@ -1905,6 +2299,22 @@ namespace InstantDealingApp
         public string FormattedDate => Timestamp.ToString("dd-MMM-yyyy hh:mm tt");
         public string CustomerName { get; set; } = "-";
         public string TabType { get; set; } = "-";
+        public string Metal { get; set; } = "Gold";
+        public string ItemType { get; set; } = "";
+        public string ItemDisplay
+        {
+            get
+            {
+                string m = string.IsNullOrWhiteSpace(Metal) ? "Gold" : Metal;
+                if (!string.IsNullOrWhiteSpace(ItemType) && ItemType != "-")
+                    return $"{m} {ItemType}";
+                return m;
+            }
+        }
+        public double WeightValue { get; set; }
+        public string WeightDisplay => WeightValue > 0 ? $"{WeightValue:0.000}g" : "-";
+        public double TakaValue { get; set; }
+        public string TakaDisplay => TakaValue > 0 ? $"{TakaValue:0.000}g" : "-";
         public double RattiValue { get; set; }
         public string RattiDisplay => RattiValue > 0 ? RattiValue.ToString("0.###") : "-";
         public double KaratValue { get; set; }

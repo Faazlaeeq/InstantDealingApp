@@ -288,6 +288,13 @@ namespace InstantDealingApp
                             }
 
                             mainTabControl.SelectedItem = historyTab;
+                            _allPrintRecords = LoadPrintHistory();
+                            ApplyHistoryFilters();
+                            if (historyDataGrid.ItemsSource is IEnumerable<PrintRecordDisplay> dispList && dispList.Any())
+                            {
+                                dispList.First().IsSelected = true;
+                                UpdateHistorySelectionCount();
+                            }
                             await System.Threading.Tasks.Task.Delay(700);
                             CaptureVisualToFile(this, historyOutPath);
                         }
@@ -1085,8 +1092,22 @@ namespace InstantDealingApp
             UpdateHistorySelectionCount();
         }
 
+        private void historyRowCheckBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is PrintRecordDisplay display)
+            {
+                display.IsSelected = !display.IsSelected;
+                UpdateHistorySelectionCount();
+                e.Handled = true;
+            }
+        }
+
         private void historyRowCheckBox_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is CheckBox cb && cb.DataContext is PrintRecordDisplay display)
+            {
+                display.IsSelected = cb.IsChecked == true;
+            }
             UpdateHistorySelectionCount();
         }
 
@@ -1325,6 +1346,15 @@ namespace InstantDealingApp
                 if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
                 {
                     PromptAndOpenRecord(display.Id);
+                    e.Handled = true;
+                }
+            }
+            else if (e.Key == Key.Space)
+            {
+                if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
+                {
+                    display.IsSelected = !display.IsSelected;
+                    UpdateHistorySelectionCount();
                     e.Handled = true;
                 }
             }

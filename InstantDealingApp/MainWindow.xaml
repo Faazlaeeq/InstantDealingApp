@@ -1127,10 +1127,18 @@
                                     </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                      Click="historyRowCheckBox_Click"
-                                                      HorizontalAlignment="Center" 
-                                                      VerticalAlignment="Center" />
+                                            <Border Background="Transparent" 
+                                                    HorizontalAlignment="Stretch" 
+                                                    VerticalAlignment="Stretch"
+                                                    Cursor="Hand"
+                                                    ToolTip="Click to select / deselect record"
+                                                    PreviewMouseLeftButtonDown="historyRowCheckBox_PreviewMouseLeftButtonDown">
+                                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                          HorizontalAlignment="Center" 
+                                                          VerticalAlignment="Center"
+                                                          IsHitTestVisible="False"
+                                                          Focusable="False" />
+                                            </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

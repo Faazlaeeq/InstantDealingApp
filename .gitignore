@@ -7,3 +7,7 @@
 *.sln.docstates
 PublishPayload.zip
 InstantDealingApp_Publish.zip
+InstantDealingApp_Setup.zip
+publish_temp/
+output/
+

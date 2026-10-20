@@ -80,6 +80,20 @@ namespace InstantDealingAppInstaller
                     Directory.CreateDirectory(installDir);
                 }
 
+                // Safety Backup: If print_history.json, customer.json, or settings exist, back them up
+                string backupDir = Path.Combine(installDir, "history_backups");
+                try
+                {
+                    if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
+                    string histFile = Path.Combine(installDir, "print_history.json");
+                    if (File.Exists(histFile) && new FileInfo(histFile).Length > 2)
+                    {
+                        string bName = $"history_installer_backup_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+                        File.Copy(histFile, Path.Combine(backupDir, bName), true);
+                    }
+                }
+                catch { }
+
                 UpdateStatus("Extracting updated files...");
                 var assembly = typeof(SetupForm).Assembly;
                 string resourceName = "Installer.PublishPayload.zip";
@@ -110,10 +124,43 @@ namespace InstantDealingAppInstaller
 
                             if (!string.IsNullOrEmpty(entry.Name))
                             {
+                                string fileName = entry.Name.ToLowerInvariant();
+                                bool isUserData = fileName == "print_history.json" ||
+                                                  fileName == "customer.json" ||
+                                                  fileName == "app_settings.json" ||
+                                                  fileName == "print_settings.json";
+
+                                if (isUserData && File.Exists(destPath))
+                                {
+                                    // NEVER overwrite existing testing records, customer list, or user settings!
+                                    continue;
+                                }
+
                                 entry.ExtractToFile(destPath, overwrite: true);
                             }
                         }
                     }
+
+                    // Auto-recover previous records if main file was missing/empty
+                    try
+                    {
+                        string histFile = Path.Combine(installDir, "print_history.json");
+                        if (!File.Exists(histFile) || new FileInfo(histFile).Length <= 2)
+                        {
+                            if (Directory.Exists(backupDir))
+                            {
+                                var latestBackup = new DirectoryInfo(backupDir)
+                                    .GetFiles("*.json")
+                                    .OrderByDescending(f => f.LastWriteTime)
+                                    .FirstOrDefault(f => f.Length > 2);
+                                if (latestBackup != null)
+                                {
+                                    File.Copy(latestBackup.FullName, histFile, true);
+                                }
+                            }
+                        }
+                    }
+                    catch { }
 
                     try { File.Delete(tempZip); } catch { }
                 }

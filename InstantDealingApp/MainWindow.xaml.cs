@@ -927,13 +927,37 @@ namespace InstantDealingApp
             try
             {
                 string path = GetPrintHistoryJsonPath();
-                if (File.Exists(path))
+                if (File.Exists(path) && new FileInfo(path).Length > 2)
                 {
                     string json = File.ReadAllText(path);
                     var list = JsonConvert.DeserializeObject<List<PrintRecord>>(json);
-                    if (list != null)
+                    if (list != null && list.Count > 0)
                     {
                         return list;
+                    }
+                }
+
+                // Auto-recover from history_backups if main file was empty or missing
+                string backupDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "history_backups");
+                if (Directory.Exists(backupDir))
+                {
+                    var backupFiles = new DirectoryInfo(backupDir)
+                        .GetFiles("*.json")
+                        .OrderByDescending(f => f.LastWriteTime)
+                        .ToList();
+
+                    foreach (var bf in backupFiles)
+                    {
+                        if (bf.Length > 2)
+                        {
+                            string bJson = File.ReadAllText(bf.FullName);
+                            var bList = JsonConvert.DeserializeObject<List<PrintRecord>>(bJson);
+                            if (bList != null && bList.Count > 0)
+                            {
+                                try { File.WriteAllText(path, bJson); } catch { }
+                                return bList;
+                            }
+                        }
                     }
                 }
             }
@@ -949,7 +973,18 @@ namespace InstantDealingApp
                 _allPrintRecords.Insert(0, record);
 
                 string json = JsonConvert.SerializeObject(_allPrintRecords, Formatting.Indented);
-                File.WriteAllText(GetPrintHistoryJsonPath(), json);
+                string mainPath = GetPrintHistoryJsonPath();
+                File.WriteAllText(mainPath, json);
+
+                // Create persistent rolling backup in history_backups directory
+                try
+                {
+                    string backupDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "history_backups");
+                    if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
+                    File.WriteAllText(System.IO.Path.Combine(backupDir, $"history_backup_{DateTime.Now:yyyyMMdd}.json"), json);
+                    File.WriteAllText(System.IO.Path.Combine(backupDir, "history_latest_backup.json"), json);
+                }
+                catch { }
 
                 Dispatcher.Invoke(() => ApplyHistoryFilters());
             }
@@ -3568,7 +3603,7 @@ namespace InstantDealingApp
             flowDoc.PageWidth = pageWidth;
             flowDoc.PagePadding = IsSmallSlipSelected ? new Thickness(4) : new Thickness(12);
             flowDoc.FontFamily = new FontFamily("Cambria");
-            int baseFontSize = (IsSmallSlipSelected ? 11 : 15) + CurrentSettings.FontSizeDelta;
+            int baseFontSize = (IsSmallSlipSelected ? 13 : 17) + CurrentSettings.FontSizeDelta;
             flowDoc.FontSize = Math.Max(8, baseFontSize);
             flowDoc.FontWeight = CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal;
             flowDoc.Background = Brushes.White;
@@ -3578,7 +3613,7 @@ namespace InstantDealingApp
             {
                 TextAlignment = TextAlignment.Center,
                 FontWeight = FontWeights.Bold,
-                FontSize = IsSmallSlipSelected ? 15 : 20,
+                FontSize = IsSmallSlipSelected ? 17 : 22,
                 Margin = new Thickness(0, 0, 0, IsSmallSlipSelected ? 4 : 8),
                 Foreground = Brushes.Black
             };
@@ -3589,7 +3624,7 @@ namespace InstantDealingApp
             {
                 TextAlignment = TextAlignment.Center,
                 FontStyle = FontStyles.Italic,
-                FontSize = IsSmallSlipSelected ? 10 : 13,
+                FontSize = IsSmallSlipSelected ? 12 : 15,
                 Margin = new Thickness(0, 0, 0, IsSmallSlipSelected ? 6 : 10),
                 Foreground = Brushes.Black
             };
@@ -3602,7 +3637,7 @@ namespace InstantDealingApp
                 customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.Bold });
                 customerParagraph.Inlines.Add(new Bold(new Run(customerName)) { Foreground = Brushes.Black });
                 customerParagraph.TextAlignment = TextAlignment.Left;
-                customerParagraph.FontSize = IsSmallSlipSelected ? 12 : 15;
+                customerParagraph.FontSize = IsSmallSlipSelected ? 14 : 17;
                 customerParagraph.Margin = new Thickness(0, 0, 0, IsSmallSlipSelected ? 4 : 8);
                 flowDoc.Blocks.Add(customerParagraph);
             }
@@ -3613,7 +3648,7 @@ namespace InstantDealingApp
             Paragraph batchHeader = new Paragraph();
             batchHeader.Inlines.Add(new Underline(new Bold(new Run($"BATCH TEST REPORT ({items.Count} ITEMS)"))));
             batchHeader.TextAlignment = TextAlignment.Center;
-            batchHeader.FontSize = IsSmallSlipSelected ? 11 : 14;
+            batchHeader.FontSize = IsSmallSlipSelected ? 13 : 16;
             batchHeader.Margin = new Thickness(0, 2, 0, 4);
             batchHeader.Foreground = Brushes.Black;
             flowDoc.Blocks.Add(batchHeader);
@@ -3627,8 +3662,8 @@ namespace InstantDealingApp
                     Paragraph itemPara = new Paragraph()
                     {
                         Margin = new Thickness(0, 2, 0, 3),
-                        FontSize = 10,
-                        LineHeight = 14
+                        FontSize = 12,
+                        LineHeight = 16
                     };
 
                     itemPara.Inlines.Add(new Bold(new Run($"#{item.Index}. {item.ItemDisplay}")) { Foreground = Brushes.Black });
@@ -3658,23 +3693,23 @@ namespace InstantDealingApp
             {
                 // Structured Table layout for Large (80mm) receipt
                 Table batchTable = new Table() { CellSpacing = 0 };
-                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(18) });  // #
-                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(58) });  // Item
+                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(14) });  // #
+                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(62) });  // Item
                 batchTable.Columns.Add(new TableColumn() { Width = new GridLength(48) });  // Net Wt
-                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(36) });  // Purity
-                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(44) });  // Pure
-                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(58) });  // Cash
+                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(42) });  // Purity
+                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(48) });  // Pure
+                batchTable.Columns.Add(new TableColumn() { Width = new GridLength(50) });  // Cash
 
                 TableRowGroup headerGroup = new TableRowGroup();
                 TableRow headerRow = new TableRow();
                 headerRow.FontWeight = FontWeights.Bold;
-                headerRow.FontSize = 10;
+                headerRow.FontSize = 12;
                 headerRow.Cells.Add(new TableCell(new Paragraph(new Run("#")) { Margin = new Thickness(0) }));
                 headerRow.Cells.Add(new TableCell(new Paragraph(new Run("Item")) { Margin = new Thickness(0) }));
                 headerRow.Cells.Add(new TableCell(new Paragraph(new Run("Net Wt")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
                 headerRow.Cells.Add(new TableCell(new Paragraph(new Run("Purity")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Center }));
                 headerRow.Cells.Add(new TableCell(new Paragraph(new Run("Pure")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
-                headerRow.Cells.Add(new TableCell(new Paragraph(new Run("Cash (Rs)")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
+                headerRow.Cells.Add(new TableCell(new Paragraph(new Run("Cash")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right }));
                 headerGroup.Rows.Add(headerRow);
                 batchTable.RowGroups.Add(headerGroup);
 
@@ -3682,7 +3717,7 @@ namespace InstantDealingApp
                 foreach (var item in items)
                 {
                     TableRow row = new TableRow();
-                    row.FontSize = 10;
+                    row.FontSize = 12;
                     row.FontWeight = FontWeights.Bold;
 
                     row.Cells.Add(new TableCell(new Paragraph(new Run(item.Index.ToString())) { Margin = new Thickness(0) }));
@@ -3707,7 +3742,7 @@ namespace InstantDealingApp
             Paragraph summaryTitle = new Paragraph(new Bold(new Run("BATCH SUMMARY / کل خلاصہ")))
             {
                 TextAlignment = TextAlignment.Center,
-                FontSize = IsSmallSlipSelected ? 11 : 14,
+                FontSize = IsSmallSlipSelected ? 13 : 16,
                 Margin = new Thickness(0, 2, 0, 4)
             };
             flowDoc.Blocks.Add(summaryTitle);
@@ -3717,43 +3752,44 @@ namespace InstantDealingApp
             double totalLaborSum = items.Sum(b => b.Labor);
             double totalCashSum = items.Sum(b => b.Cash);
 
-            Table summaryTable = new Table() { CellSpacing = 2 };
-            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 100 : 140) });
-            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 80 : 100) });
+            Table summaryTable = new Table() { CellSpacing = 0 };
+            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 82 : 154) });
+            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 100 : 110) });
 
             TableRowGroup summaryGroup = new TableRowGroup();
+            int summaryFontSize = IsSmallSlipSelected ? 12 : 14;
 
             // Total Items
-            TableRow itemsRow = new TableRow();
+            TableRow itemsRow = new TableRow() { FontSize = summaryFontSize };
             itemsRow.Cells.Add(new TableCell(new Paragraph(new Run("Total Items:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             itemsRow.Cells.Add(new TableCell(new Paragraph(new Run(items.Count.ToString())) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(itemsRow);
 
             // Total Weight
-            TableRow wtRow = new TableRow();
-            wtRow.Cells.Add(new TableCell(new Paragraph(new Run("Total Net Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            TableRow wtRow = new TableRow() { FontSize = summaryFontSize };
+            wtRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Net Weight:" : "Total Net Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             wtRow.Cells.Add(new TableCell(new Paragraph(new Run($"{totalWeightSum:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(wtRow);
 
             // Total Pure Gold
-            TableRow pureRow = new TableRow();
-            pureRow.Cells.Add(new TableCell(new Paragraph(new Run("Total Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            TableRow pureRow = new TableRow() { FontSize = summaryFontSize };
+            pureRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Pure Gold:" : "Total Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             pureRow.Cells.Add(new TableCell(new Paragraph(new Run($"{totalPureSum:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(pureRow);
 
             // Total Labor
             if (totalLaborSum > 0)
             {
-                TableRow laborRow = new TableRow();
-                laborRow.Cells.Add(new TableCell(new Paragraph(new Run("Total Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                TableRow laborRow = new TableRow() { FontSize = summaryFontSize };
+                laborRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Labor:" : "Total Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
                 laborRow.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalLaborSum:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                 summaryGroup.Rows.Add(laborRow);
             }
 
             // TOTAL CASH
-            TableRow cashRow = new TableRow();
-            cashRow.Cells.Add(new TableCell(new Paragraph(new Run("TOTAL CASH:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold, FontSize = IsSmallSlipSelected ? 12 : 15 }));
-            cashRow.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalCashSum:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold, FontSize = IsSmallSlipSelected ? 12 : 15 }));
+            TableRow cashRow = new TableRow() { FontSize = IsSmallSlipSelected ? 13 : 16 };
+            cashRow.Cells.Add(new TableCell(new Paragraph(new Run("TOTAL CASH:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            cashRow.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalCashSum:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(cashRow);
 
             summaryTable.RowGroups.Add(summaryGroup);
@@ -3768,7 +3804,7 @@ namespace InstantDealingApp
                 {
                     TextAlignment = TextAlignment.Center,
                     FontWeight = FontWeights.Bold,
-                    FontSize = IsSmallSlipSelected ? 10 : 13,
+                    FontSize = IsSmallSlipSelected ? 12 : 15,
                     Margin = new Thickness(0, 4, 0, 4)
                 };
                 flowDoc.Blocks.Add(ratePara);
@@ -3780,14 +3816,14 @@ namespace InstantDealingApp
                 flowDoc.Blocks.Add(CreateSeparator());
                 Paragraph notesHeader = new Paragraph(new Bold(new Run("NOTES / نوٹ:")))
                 {
-                    FontSize = IsSmallSlipSelected ? 10 : 12,
+                    FontSize = IsSmallSlipSelected ? 12 : 14,
                     Margin = new Thickness(0, 2, 0, 2)
                 };
                 flowDoc.Blocks.Add(notesHeader);
 
                 Paragraph notesBody = new Paragraph(new Run(notes))
                 {
-                    FontSize = IsSmallSlipSelected ? 9 : 11,
+                    FontSize = IsSmallSlipSelected ? 11 : 13,
                     Margin = new Thickness(0, 0, 0, 2),
                     Foreground = Brushes.DarkSlateGray
                 };
@@ -3799,7 +3835,7 @@ namespace InstantDealingApp
             Paragraph footer = new Paragraph(new Run("Thank You for Your Business!"))
             {
                 TextAlignment = TextAlignment.Center,
-                FontSize = IsSmallSlipSelected ? 9 : 11,
+                FontSize = IsSmallSlipSelected ? 11 : 13,
                 FontStyle = FontStyles.Italic,
                 Margin = new Thickness(0, 5, 0, 0)
             };

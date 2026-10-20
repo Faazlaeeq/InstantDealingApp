@@ -172,6 +172,7 @@ namespace InstantDealingApp
                         if (doPrintTotalPureGoldCash != null) doPrintTotalPureGoldCash.IsChecked = true;
                         if (doPrintGoldRateTest != null) doPrintGoldRateTest.IsChecked = true;
                         if (doPrintCustomerNameTest != null) doPrintCustomerNameTest.IsChecked = true;
+                        if (notesTextboxTest != null) notesTextboxTest.Text = "12.50\r\n8.25\r\n15.00";
                         updateTestCalculations();
 
                         await System.Threading.Tasks.Task.Delay(700);
@@ -1206,38 +1207,97 @@ namespace InstantDealingApp
                 return;
             }
 
-            // Batch print multiple records
+            var selectedRecords = new List<PrintRecord>();
+            foreach (var display in selected)
+            {
+                var record = _allPrintRecords.FirstOrDefault(r => r.Id == display.Id);
+                if (record == null)
+                {
+                    _allPrintRecords = LoadPrintHistory();
+                    record = _allPrintRecords.FirstOrDefault(r => r.Id == display.Id);
+                }
+                if (record != null) selectedRecords.Add(record);
+            }
+
+            if (selectedRecords.Count == 0) return;
+
+            // When multiple items printed from history, compile and print as a single combined Batch receipt
+            var batchItems = new List<BatchItem>();
+            int idx = 1;
+            foreach (var r in selectedRecords)
+            {
+                if (r.BatchItems != null && r.BatchItems.Count > 0)
+                {
+                    foreach (var sub in r.BatchItems)
+                    {
+                        batchItems.Add(new BatchItem
+                        {
+                            Index = idx++,
+                            Metal = !string.IsNullOrWhiteSpace(sub.Metal) ? sub.Metal : "Gold",
+                            ItemType = sub.ItemType ?? "",
+                            Weight = sub.Weight,
+                            Taka = sub.Taka,
+                            TotalWeight = sub.TotalWeight > 0 ? sub.TotalWeight : (sub.Weight - sub.Taka),
+                            Ratti = sub.Ratti,
+                            Karat = sub.Karat,
+                            PurityPercent = sub.PurityPercent,
+                            PureGold = sub.PureGold,
+                            Labor = sub.Labor,
+                            Cash = sub.Cash
+                        });
+                    }
+                }
+                else
+                {
+                    batchItems.Add(new BatchItem
+                    {
+                        Index = idx++,
+                        Metal = !string.IsNullOrWhiteSpace(r.Metal) ? r.Metal : "Gold",
+                        ItemType = r.ItemType ?? "",
+                        Weight = r.Weight > 0 ? r.Weight : r.TotalWeight,
+                        Taka = r.Taka,
+                        TotalWeight = r.TotalWeight > 0 ? r.TotalWeight : r.Weight,
+                        Ratti = r.Ratti,
+                        Karat = r.Karat,
+                        PurityPercent = r.PurityPercent,
+                        PureGold = r.PureGold,
+                        Labor = r.Labor,
+                        Cash = r.Cash
+                    });
+                }
+            }
+
+            var distinctCustomers = selectedRecords
+                .Select(r => r.CustomerName)
+                .Where(c => !string.IsNullOrWhiteSpace(c) && c != "-")
+                .Distinct()
+                .ToList();
+
+            string batchCustomer = "";
+            if (distinctCustomers.Count == 1)
+                batchCustomer = distinctCustomers[0];
+            else if (distinctCustomers.Count > 1)
+                batchCustomer = string.Join(", ", distinctCustomers);
+
             var confirm = MessageBox.Show(
-                $"You have selected {selected.Count} receipts.\n\nDo you want to print all {selected.Count} receipts?\n\nکیا آپ تمام {selected.Count} منتخب رسیدیں پرنٹ کرنا چاہتے ہیں؟",
-                "Batch Print Receipts / رسیدیں پرنٹ کریں",
+                $"You have selected {selectedRecords.Count} records ({batchItems.Count} total items).\n\nDo you want to print them as a single combined Batch receipt?\n\nکیا آپ ان {selectedRecords.Count} ریکارڈز کو ایک مشترکہ بیچ رسید کے طور پر پرنٹ کرنا چاہتے ہیں؟",
+                "Batch Print / بیچ پرنٹ",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
 
             if (confirm != MessageBoxResult.Yes) return;
 
-            PrintDialog printDlg = new PrintDialog();
-            bool? res = printDlg.ShowDialog();
-            if (res != true) return;
+            FlowDocument batchDoc = CreateBatchFlowDocument(
+                batchItems,
+                batchCustomer,
+                goldRate: 0,
+                date: DateTime.Now,
+                printCustomer: !string.IsNullOrWhiteSpace(batchCustomer),
+                printGoldRate: false,
+                printNotes: false,
+                notes: "");
 
-            int copies = Math.Max(1, CurrentSettings.NumberOfCopies);
-            int printedCount = 0;
-
-            foreach (var display in selected)
-            {
-                var record = _allPrintRecords.FirstOrDefault(r => r.Id == display.Id);
-                if (record != null)
-                {
-                    FlowDocument doc = CreateFlowDocumentFromRecord(record);
-                    IDocumentPaginatorSource idp = doc;
-                    for (int c = 0; c < copies; c++)
-                    {
-                        printDlg.PrintDocument(idp.DocumentPaginator, $"History Receipt {display.FormattedDate} ({c + 1}/{copies})");
-                    }
-                    printedCount++;
-                }
-            }
-
-            MessageBox.Show($"Successfully sent {printedCount} receipts ({printedCount * copies} slips) to the printer.\n\nتمام رسیدیں پرنٹر پر بھیج دی گئی ہیں۔", "Batch Print Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            PrintReceipt(batchDoc);
         }
 
         private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
@@ -1585,12 +1645,29 @@ namespace InstantDealingApp
         {
             if (record == null) return new FlowDocument();
 
+            if (record.BatchItems != null && record.BatchItems.Count > 0)
+            {
+                return CreateBatchFlowDocument(
+                    record.BatchItems,
+                    record.CustomerName,
+                    goldRate: record.GoldRate,
+                    date: record.Timestamp,
+                    printCustomer: !string.IsNullOrWhiteSpace(record.CustomerName) && record.CustomerName != "-",
+                    printGoldRate: record.GoldRate > 0,
+                    printNotes: false,
+                    notes: "");
+            }
+
             if (!string.IsNullOrWhiteSpace(record.ReceiptXaml))
             {
                 try
                 {
                     var parsed = (FlowDocument)System.Windows.Markup.XamlReader.Parse(record.ReceiptXaml);
-                    if (parsed != null) return parsed;
+                    if (parsed != null)
+                    {
+                        StripNotesFromFlowDocument(parsed);
+                        return parsed;
+                    }
                 }
                 catch { }
             }
@@ -1757,26 +1834,8 @@ namespace InstantDealingApp
                 flowDoc.Blocks.Add(goldRateParagraph);
             }
 
-            // Notes Section
-            if (!string.IsNullOrWhiteSpace(record.Notes) && record.Notes != "-")
-            {
-                flowDoc.Blocks.Add(CreateSeparator());
-                Paragraph notesHeader = new Paragraph();
-                notesHeader.Inlines.Add(new Bold(new Run("NOTES / نوٹ:")));
-                notesHeader.FontSize = 13;
-                notesHeader.Margin = new Thickness(0, 4, 0, 2);
-                notesHeader.Foreground = Brushes.Black;
-                flowDoc.Blocks.Add(notesHeader);
-
-                Paragraph notesBody = new Paragraph(new Run(record.Notes))
-                {
-                    FontSize = 11,
-                    Margin = new Thickness(0, 0, 0, 4),
-                    Foreground = Brushes.DarkSlateGray
-                };
-                flowDoc.Blocks.Add(notesBody);
-            }
-
+            // NOTE: Notes are not printed when reprinting from history per requirement
+            
             // Footer
             flowDoc.Blocks.Add(CreateSeparator());
             Paragraph footer = new Paragraph(new Run("Thank You for Your Business!"))
@@ -1789,6 +1848,48 @@ namespace InstantDealingApp
             flowDoc.Blocks.Add(footer);
 
             return flowDoc;
+        }
+
+        private static void StripNotesFromFlowDocument(FlowDocument doc)
+        {
+            if (doc == null) return;
+            var blocksToRemove = new List<Block>();
+            bool inNotesSection = false;
+            Block? lastSeparatorBeforeNotes = null;
+
+            foreach (var block in doc.Blocks)
+            {
+                string text = new TextRange(block.ContentStart, block.ContentEnd).Text;
+                if (!inNotesSection)
+                {
+                    if (text.Contains("═") || text.Contains("- - -") || text.Contains("---"))
+                    {
+                        lastSeparatorBeforeNotes = block;
+                    }
+                    else if (text.Contains("NOTES") || text.Contains("نوٹ"))
+                    {
+                        inNotesSection = true;
+                        if (lastSeparatorBeforeNotes != null)
+                        {
+                            blocksToRemove.Add(lastSeparatorBeforeNotes);
+                        }
+                        blocksToRemove.Add(block);
+                    }
+                }
+                else
+                {
+                    if (text.Contains("Thank You") || text.Contains("═") || text.Contains("- - -") || text.Contains("---"))
+                    {
+                        break;
+                    }
+                    blocksToRemove.Add(block);
+                }
+            }
+
+            foreach (var b in blocksToRemove)
+            {
+                doc.Blocks.Remove(b);
+            }
         }
 
         #endregion
@@ -1898,9 +1999,44 @@ namespace InstantDealingApp
 
         private void notesTextboxTest_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (notesTextboxTest == null || string.IsNullOrWhiteSpace(notesTextboxTest.Text)) return;
+            if (notesTextboxTest == null) return;
 
-            ExtractAndApplyGoldRateFromNotes(notesTextboxTest.Text);
+            string text = notesTextboxTest.Text;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                if (notesSumTextTest != null) notesSumTextTest.Text = "Sum: 0.00";
+                if (notesAvgTextTest != null) notesAvgTextTest.Text = "Avg: 0.00";
+                return;
+            }
+
+            ExtractAndApplyGoldRateFromNotes(text);
+
+            var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            double sum = 0;
+            int count = 0;
+
+            foreach (var rawLine in lines)
+            {
+                string cleaned = rawLine.Trim().Replace(",", "");
+                if (double.TryParse(cleaned, out double val))
+                {
+                    sum += val;
+                    count++;
+                }
+                else
+                {
+                    var match = Regex.Match(cleaned, @"-?\d+(\.\d+)?");
+                    if (match.Success && double.TryParse(match.Value, out double parsedVal))
+                    {
+                        sum += parsedVal;
+                        count++;
+                    }
+                }
+            }
+
+            double avg = count > 0 ? (sum / count) : 0;
+            if (notesSumTextTest != null) notesSumTextTest.Text = $"Sum: {sum:N2}";
+            if (notesAvgTextTest != null) notesAvgTextTest.Text = $"Avg: {avg:N2}";
         }
 
         private void ExtractAndApplyGoldRateFromNotes(string text)
@@ -3374,6 +3510,58 @@ namespace InstantDealingApp
 
         public FlowDocument CreateBatchFlowDocument(DateTime date)
         {
+            string cust = customersMulti?.Text ?? "";
+            bool printCust = doPrintCustomerNameMulti?.IsChecked == true && !string.IsNullOrWhiteSpace(cust);
+            double goldRate = 0;
+            string rateDisplay = "";
+            if (goldRateTextboxMulti != null && !string.IsNullOrWhiteSpace(goldRateTextboxMulti.Text))
+            {
+                string rateStr = goldRateTextboxMulti.Text;
+                double diff = 0;
+                if (goldRateDiffTextboxMulti != null && !string.IsNullOrWhiteSpace(goldRateDiffTextboxMulti.Text))
+                {
+                    double.TryParse(goldRateDiffTextboxMulti.Text.Replace(",", "").Replace(" ", ""), out diff);
+                }
+                if (diff > 0 && _rawBaseGoldRateMulti > 0)
+                {
+                    double.TryParse(rateStr.Replace(",", "").Replace(" ", ""), out double finalR);
+                    rateDisplay = $"Gold Rate: {_rawBaseGoldRateMulti:N0} - {diff:N0} = {finalR:N0}";
+                    goldRate = finalR;
+                }
+                else
+                {
+                    double.TryParse(rateStr.Replace(",", "").Replace(" ", ""), out goldRate);
+                    rateDisplay = $"Gold Rate: {rateStr}";
+                }
+            }
+
+            bool printRate = doPrintGoldRateMulti?.IsChecked == true && goldRate > 0;
+            bool printNotes = doPrintNotesMulti?.IsChecked == true && !string.IsNullOrWhiteSpace(notesTextboxMulti?.Text);
+            string notes = notesTextboxMulti?.Text ?? "";
+
+            return CreateBatchFlowDocument(
+                BatchItems,
+                cust,
+                goldRate,
+                date,
+                printCust,
+                printRate,
+                printNotes,
+                notes,
+                rateDisplay);
+        }
+
+        public FlowDocument CreateBatchFlowDocument(
+            IList<BatchItem> items,
+            string customerName,
+            double goldRate,
+            DateTime date,
+            bool printCustomer = true,
+            bool printGoldRate = false,
+            bool printNotes = false,
+            string notes = "",
+            string customRateDisplay = "")
+        {
             FlowDocument flowDoc = new FlowDocument();
 
             int pageWidth = IsSmallSlipSelected ? 190 : 288;
@@ -3408,13 +3596,7 @@ namespace InstantDealingApp
             flowDoc.Blocks.Add(dateParagraph);
 
             // Customer Information
-            string customerName = "";
-            if (customersMulti != null && !string.IsNullOrWhiteSpace(customersMulti.Text))
-                customerName = customersMulti.Text;
-            else if (customersTest != null && !string.IsNullOrWhiteSpace(customersTest.Text))
-                customerName = customersTest.Text;
-
-            if (doPrintCustomerNameMulti?.IsChecked == true && !string.IsNullOrWhiteSpace(customerName))
+            if (printCustomer && !string.IsNullOrWhiteSpace(customerName) && customerName != "-")
             {
                 Paragraph customerParagraph = new Paragraph();
                 customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.Bold });
@@ -3429,7 +3611,7 @@ namespace InstantDealingApp
 
             // Section Title
             Paragraph batchHeader = new Paragraph();
-            batchHeader.Inlines.Add(new Underline(new Bold(new Run($"BATCH TEST REPORT ({BatchItems.Count} ITEMS)"))));
+            batchHeader.Inlines.Add(new Underline(new Bold(new Run($"BATCH TEST REPORT ({items.Count} ITEMS)"))));
             batchHeader.TextAlignment = TextAlignment.Center;
             batchHeader.FontSize = IsSmallSlipSelected ? 11 : 14;
             batchHeader.Margin = new Thickness(0, 2, 0, 4);
@@ -3440,7 +3622,7 @@ namespace InstantDealingApp
             if (IsSmallSlipSelected)
             {
                 // Compact card layout for Small (58mm) receipt
-                foreach (var item in BatchItems)
+                foreach (var item in items)
                 {
                     Paragraph itemPara = new Paragraph()
                     {
@@ -3497,7 +3679,7 @@ namespace InstantDealingApp
                 batchTable.RowGroups.Add(headerGroup);
 
                 TableRowGroup rowsGroup = new TableRowGroup();
-                foreach (var item in BatchItems)
+                foreach (var item in items)
                 {
                     TableRow row = new TableRow();
                     row.FontSize = 10;
@@ -3530,10 +3712,10 @@ namespace InstantDealingApp
             };
             flowDoc.Blocks.Add(summaryTitle);
 
-            double totalWeightSum = BatchItems.Sum(b => b.TotalWeight);
-            double totalPureSum = BatchItems.Sum(b => b.PureGold);
-            double totalLaborSum = BatchItems.Sum(b => b.Labor);
-            double totalCashSum = BatchItems.Sum(b => b.Cash);
+            double totalWeightSum = items.Sum(b => b.TotalWeight);
+            double totalPureSum = items.Sum(b => b.PureGold);
+            double totalLaborSum = items.Sum(b => b.Labor);
+            double totalCashSum = items.Sum(b => b.Cash);
 
             Table summaryTable = new Table() { CellSpacing = 2 };
             summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 100 : 140) });
@@ -3544,7 +3726,7 @@ namespace InstantDealingApp
             // Total Items
             TableRow itemsRow = new TableRow();
             itemsRow.Cells.Add(new TableCell(new Paragraph(new Run("Total Items:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
-            itemsRow.Cells.Add(new TableCell(new Paragraph(new Run(BatchItems.Count.ToString())) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+            itemsRow.Cells.Add(new TableCell(new Paragraph(new Run(items.Count.ToString())) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(itemsRow);
 
             // Total Weight
@@ -3578,27 +3760,10 @@ namespace InstantDealingApp
             flowDoc.Blocks.Add(summaryTable);
 
             // Gold Rate (if entered and checked)
-            if (doPrintGoldRateMulti?.IsChecked == true && goldRateTextboxMulti != null && !string.IsNullOrWhiteSpace(goldRateTextboxMulti.Text) && goldRateTextboxMulti.Text != "0")
+            if (printGoldRate && (goldRate > 0 || !string.IsNullOrWhiteSpace(customRateDisplay)))
             {
                 flowDoc.Blocks.Add(CreateSeparator());
-                string rateStr = goldRateTextboxMulti.Text;
-                double diff = 0;
-                if (goldRateDiffTextboxMulti != null && !string.IsNullOrWhiteSpace(goldRateDiffTextboxMulti.Text))
-                {
-                    double.TryParse(goldRateDiffTextboxMulti.Text.Replace(",", "").Replace(" ", ""), out diff);
-                }
-
-                string rateDisplay;
-                if (diff > 0 && _rawBaseGoldRateMulti > 0)
-                {
-                    double.TryParse(rateStr.Replace(",", "").Replace(" ", ""), out double finalR);
-                    rateDisplay = $"Gold Rate: {_rawBaseGoldRateMulti:N0} - {diff:N0} = {finalR:N0}";
-                }
-                else
-                {
-                    rateDisplay = $"Gold Rate: {rateStr}";
-                }
-
+                string rateDisplay = !string.IsNullOrWhiteSpace(customRateDisplay) ? customRateDisplay : $"Gold Rate: {goldRate:N0}";
                 Paragraph ratePara = new Paragraph(new Run(rateDisplay))
                 {
                     TextAlignment = TextAlignment.Center,
@@ -3609,8 +3774,8 @@ namespace InstantDealingApp
                 flowDoc.Blocks.Add(ratePara);
             }
 
-            // Notes Section (if entered and checked)
-            if (doPrintNotesMulti?.IsChecked == true && notesTextboxMulti != null && !string.IsNullOrWhiteSpace(notesTextboxMulti.Text))
+            // Notes Section (if entered and checked) - printed as-is without avg/sum
+            if (printNotes && !string.IsNullOrWhiteSpace(notes))
             {
                 flowDoc.Blocks.Add(CreateSeparator());
                 Paragraph notesHeader = new Paragraph(new Bold(new Run("NOTES / نوٹ:")))
@@ -3620,26 +3785,13 @@ namespace InstantDealingApp
                 };
                 flowDoc.Blocks.Add(notesHeader);
 
-                Paragraph notesBody = new Paragraph(new Run(notesTextboxMulti.Text))
+                Paragraph notesBody = new Paragraph(new Run(notes))
                 {
                     FontSize = IsSmallSlipSelected ? 9 : 11,
                     Margin = new Thickness(0, 0, 0, 2),
                     Foreground = Brushes.DarkSlateGray
                 };
                 flowDoc.Blocks.Add(notesBody);
-
-                string sumStr = notesSumTextMulti?.Text ?? "";
-                string avgStr = notesAvgTextMulti?.Text ?? "";
-                if (!string.IsNullOrWhiteSpace(sumStr) || !string.IsNullOrWhiteSpace(avgStr))
-                {
-                    Paragraph avgSumPara = new Paragraph(new Bold(new Run($"{sumStr}   |   {avgStr}")))
-                    {
-                        FontSize = IsSmallSlipSelected ? 9 : 11,
-                        Margin = new Thickness(0, 2, 0, 2),
-                        Foreground = Brushes.Navy
-                    };
-                    flowDoc.Blocks.Add(avgSumPara);
-                }
             }
 
             // Footer
@@ -3649,12 +3801,13 @@ namespace InstantDealingApp
                 TextAlignment = TextAlignment.Center,
                 FontSize = IsSmallSlipSelected ? 9 : 11,
                 FontStyle = FontStyles.Italic,
-                Margin = new Thickness(0, 4, 0, 0)
+                Margin = new Thickness(0, 5, 0, 0)
             };
             flowDoc.Blocks.Add(footer);
 
             return flowDoc;
         }
+
 
         private Paragraph CreateSeparator()
         {
@@ -3790,6 +3943,8 @@ namespace InstantDealingApp
             if (totalPureGoldCashTextbox != null) totalPureGoldCashTextbox.Text = "0";
 
             if (notesTextboxTest != null) notesTextboxTest.Text = "";
+            if (notesSumTextTest != null) notesSumTextTest.Text = "Sum: 0.00";
+            if (notesAvgTextTest != null) notesAvgTextTest.Text = "Avg: 0.00";
 
             if (sampleWeightTextbox != null) sampleWeightTextbox.Text = "0";
             if (resultWeightTextbox != null) resultWeightTextbox.Text = "0";

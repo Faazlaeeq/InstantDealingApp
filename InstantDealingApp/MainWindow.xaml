@@ -440,6 +440,7 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
                                     <!-- Row 0: Header with Title and Print CheckBox -->
@@ -456,12 +457,20 @@
                                     </Grid>
 
                                     <!-- Row 1: Multiline Notes TextBox -->
-                                    <TextBox x:Name="notesTextboxTest" Grid.Row="1" FontSize="20" FontWeight="Bold" Height="170"
+                                    <TextBox x:Name="notesTextboxTest" Grid.Row="1" FontSize="20" FontWeight="Bold" Height="125"
                                              AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                              Padding="8" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1"
                                              VerticalContentAlignment="Top" HorizontalContentAlignment="Left" TextAlignment="Left"
                                              TextChanged="notesTextboxTest_TextChanged"
                                              TextBlock.FontSize="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+
+                                    <!-- Live Status Bar: Sum on left, Avg on right -->
+                                    <Border Grid.Row="2" Background="#F1F5F9" CornerRadius="6" Padding="12,6" Margin="0,8,0,0" BorderBrush="#CBD5E1" BorderThickness="1">
+                                        <Grid>
+                                            <TextBlock x:Name="notesSumTextTest" Text="Sum: 0.00" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="notesAvgTextTest" Text="Avg: 0.00" HorizontalAlignment="Right" FontSize="18" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </Grid>

@@ -102,6 +102,7 @@ namespace InstantDealingApp
             if (customersMulti != null) customersMulti.ItemsSource = names;
             if (batchDataGrid != null) batchDataGrid.ItemsSource = BatchItems;
             LoadPrintSettings();
+            LoadAppSettings();
             _allPrintRecords = LoadPrintHistory();
             ApplyHistoryFilters();
             mainTabControl.SelectedItem = testTab;
@@ -125,6 +126,7 @@ namespace InstantDealingApp
                     string? multiOutPath = null;
                     string? batchReceiptOutPath = null;
                     string? smallBatchReceiptOutPath = null;
+                    string? settingsOutPath = null;
 
                     for (int j = 0; j < args.Length; j++)
                     {
@@ -134,6 +136,7 @@ namespace InstantDealingApp
                         if (args[j] == "--multi" && j + 1 < args.Length) multiOutPath = args[j + 1];
                         if (args[j] == "--batch-receipt" && j + 1 < args.Length) batchReceiptOutPath = args[j + 1];
                         if (args[j] == "--small-batch-receipt" && j + 1 < args.Length) smallBatchReceiptOutPath = args[j + 1];
+                        if (args[j] == "--settings" && j + 1 < args.Length) settingsOutPath = args[j + 1];
                     }
                     if (string.IsNullOrEmpty(historyOutPath) && i + 2 < args.Length && !args[i + 2].StartsWith("--"))
                     {
@@ -289,6 +292,13 @@ namespace InstantDealingApp
                             CaptureVisualToFile(this, historyOutPath);
                         }
 
+                        if (!string.IsNullOrEmpty(settingsOutPath) && settingsTab != null)
+                        {
+                            mainTabControl.SelectedItem = settingsTab;
+                            await System.Threading.Tasks.Task.Delay(700);
+                            CaptureVisualToFile(this, settingsOutPath);
+                        }
+
                         Application.Current.Shutdown();
                     });
                     break;
@@ -434,6 +444,194 @@ namespace InstantDealingApp
             }
             catch { }
         }
+
+        #region Application Settings
+
+        public AppSettings CurrentSettings { get; set; } = new AppSettings();
+
+        private string GetAppSettingsJsonPath()
+        {
+            return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_settings.json");
+        }
+
+        private void LoadAppSettings()
+        {
+            try
+            {
+                string path = GetAppSettingsJsonPath();
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    var settings = JsonConvert.DeserializeObject<AppSettings>(json);
+                    if (settings != null)
+                    {
+                        CurrentSettings = settings;
+                    }
+                }
+            }
+            catch { }
+
+            ApplyAppSettingsToUI();
+        }
+
+        private void SaveAppSettings()
+        {
+            try
+            {
+                // Read from UI
+                if (int.TryParse(txtSettingCopies?.Text, out int copies))
+                {
+                    CurrentSettings.NumberOfCopies = Math.Max(1, copies);
+                }
+                CurrentSettings.IsSmallSlip = radioSettingsSlipSmall?.IsChecked == true;
+                CurrentSettings.IsBoldEnabled = radioSettingBold?.IsChecked == true;
+
+                string path = GetAppSettingsJsonPath();
+                string json = JsonConvert.SerializeObject(CurrentSettings, Formatting.Indented);
+                File.WriteAllText(path, json);
+
+                // Synchronize slip size with print_settings
+                SetSlipSize(CurrentSettings.IsSmallSlip);
+                SavePrintSettings();
+
+                ApplyAppSettingsToUI();
+
+                if (txtSettingsStatus != null)
+                {
+                    txtSettingsStatus.Text = "Settings saved successfully! / ترتیبات محفوظ ہو گئیں ✓";
+                    var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+                    timer.Tick += (s, e) => { txtSettingsStatus.Text = ""; timer.Stop(); };
+                    timer.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving settings: {ex.Message}", "Save Settings", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void ApplyAppSettingsToUI()
+        {
+            if (txtSettingCopies != null)
+                txtSettingCopies.Text = CurrentSettings.NumberOfCopies.ToString();
+
+            if (radioSettingsSlipSmall != null && radioSettingsSlipLarge != null)
+            {
+                radioSettingsSlipSmall.IsChecked = CurrentSettings.IsSmallSlip;
+                radioSettingsSlipLarge.IsChecked = !CurrentSettings.IsSmallSlip;
+            }
+
+            SetSlipSize(CurrentSettings.IsSmallSlip);
+
+            if (radioSettingBold != null && radioSettingRegular != null)
+            {
+                radioSettingBold.IsChecked = CurrentSettings.IsBoldEnabled;
+                radioSettingRegular.IsChecked = !CurrentSettings.IsBoldEnabled;
+            }
+
+            // Apply font weight to window
+            this.FontWeight = CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal;
+            TextElement.SetFontWeight(this, CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal);
+
+            // Font size delta display
+            if (txtSettingFontSizeDelta != null)
+            {
+                if (CurrentSettings.FontSizeDelta == 0)
+                    txtSettingFontSizeDelta.Text = "Current: Normal (0px)";
+                else if (CurrentSettings.FontSizeDelta > 0)
+                    txtSettingFontSizeDelta.Text = $"Current: +{CurrentSettings.FontSizeDelta}px";
+                else
+                    txtSettingFontSizeDelta.Text = $"Current: {CurrentSettings.FontSizeDelta}px";
+            }
+
+            if (txtSettingSamplePreview != null)
+            {
+                txtSettingSamplePreview.FontSize = Math.Max(10, 16 + CurrentSettings.FontSizeDelta);
+                txtSettingSamplePreview.FontWeight = CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal;
+            }
+        }
+
+        private void btnDecreaseCopies_Click(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(txtSettingCopies?.Text, out int c))
+            {
+                int newCopies = Math.Max(1, c - 1);
+                if (txtSettingCopies != null) txtSettingCopies.Text = newCopies.ToString();
+                CurrentSettings.NumberOfCopies = newCopies;
+            }
+        }
+
+        private void btnIncreaseCopies_Click(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(txtSettingCopies?.Text, out int c))
+            {
+                int newCopies = Math.Min(10, c + 1);
+                if (txtSettingCopies != null) txtSettingCopies.Text = newCopies.ToString();
+                CurrentSettings.NumberOfCopies = newCopies;
+            }
+        }
+
+        private void btnPresetCopies_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && int.TryParse(btn.Tag?.ToString(), out int p))
+            {
+                if (txtSettingCopies != null) txtSettingCopies.Text = p.ToString();
+                CurrentSettings.NumberOfCopies = p;
+            }
+        }
+
+        private void settingsSlipSize_Checked(object sender, RoutedEventArgs e)
+        {
+            bool isSmall = radioSettingsSlipSmall?.IsChecked == true;
+            CurrentSettings.IsSmallSlip = isSmall;
+            SetSlipSize(isSmall);
+        }
+
+        private void btnDecreaseFontSize_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentSettings.FontSizeDelta = Math.Max(-4, CurrentSettings.FontSizeDelta - 1);
+            ApplyAppSettingsToUI();
+        }
+
+        private void btnIncreaseFontSize_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentSettings.FontSizeDelta = Math.Min(6, CurrentSettings.FontSizeDelta + 1);
+            ApplyAppSettingsToUI();
+        }
+
+        private void btnResetFontSize_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentSettings.FontSizeDelta = 0;
+            ApplyAppSettingsToUI();
+        }
+
+        private void settingsBold_Checked(object sender, RoutedEventArgs e)
+        {
+            CurrentSettings.IsBoldEnabled = radioSettingBold?.IsChecked == true;
+            ApplyAppSettingsToUI();
+        }
+
+        private void btnSaveSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SaveAppSettings();
+        }
+
+        private void btnRestoreSettingsDefaults_Click(object sender, RoutedEventArgs e)
+        {
+            var res = MessageBox.Show(
+                "Are you sure you want to restore default settings?\n\nThis will reset print copies to 2, slip size to Large (80mm), font size to default, and text to bold.\n\nکیا آپ پہلے والی ترتیبات بحال کرنا چاہتے ہیں؟",
+                "Restore Defaults",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (res == MessageBoxResult.Yes)
+            {
+                CurrentSettings = new AppSettings();
+                SaveAppSettings();
+            }
+        }
+
+        #endregion
 
         private bool _isCalculatingRatti = false;
         private double _rawBaseGoldRate = 0;
@@ -703,6 +901,16 @@ namespace InstantDealingApp
                     saveButtonText.Inlines.Add(new Run("منتخب پرنٹ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
                 }
             }
+            else if (mainTabControl.SelectedItem == settingsTab)
+            {
+                ApplyAppSettingsToUI();
+                if (saveButtonText != null)
+                {
+                    saveButtonText.Inlines.Clear();
+                    saveButtonText.Inlines.Add(new Run("Save Settings / ") { FontWeight = FontWeights.Bold });
+                    saveButtonText.Inlines.Add(new Run("ترتیبات محفوظ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
+                }
+            }
         }
 
         #region Print History & DataGrid
@@ -801,7 +1009,8 @@ namespace InstantDealingApp
                 }
 
                 string searchCustomer = historySearchCustomer?.Text?.Trim().ToLower() ?? "";
-                DateTime? selectedDate = historyDatePicker?.SelectedDate;
+                DateTime? fromDate = historyFromDatePicker?.SelectedDate;
+                DateTime? toDate = historyToDatePicker?.SelectedDate;
 
                 var filtered = _allPrintRecords.Where(r =>
                 {
@@ -811,11 +1020,11 @@ namespace InstantDealingApp
                             return false;
                     }
 
-                    if (selectedDate.HasValue)
-                    {
-                        if (r.Timestamp.Date != selectedDate.Value.Date)
-                            return false;
-                    }
+                    if (fromDate.HasValue && r.Timestamp.Date < fromDate.Value.Date)
+                        return false;
+
+                    if (toDate.HasValue && r.Timestamp.Date > toDate.Value.Date)
+                        return false;
 
                     return true;
                 });
@@ -842,10 +1051,11 @@ namespace InstantDealingApp
                 }).ToList();
 
                 historyDataGrid.ItemsSource = displayList;
-                if (historyCountText != null)
+                if (historySelectAllHeaderCheckBox != null)
                 {
-                    historyCountText.Text = $"Records: {displayList.Count}";
+                    historySelectAllHeaderCheckBox.IsChecked = false;
                 }
+                UpdateHistorySelectionCount();
             }
             finally
             {
@@ -858,11 +1068,60 @@ namespace InstantDealingApp
             ApplyHistoryFilters();
         }
 
+        private void historyThisMonth_Click(object sender, RoutedEventArgs e)
+        {
+            DateTime now = DateTime.Now;
+            if (historyFromDatePicker != null) historyFromDatePicker.SelectedDate = new DateTime(now.Year, now.Month, 1);
+            if (historyToDatePicker != null) historyToDatePicker.SelectedDate = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
+            ApplyHistoryFilters();
+        }
+
         private void historyClearFilters_Click(object sender, RoutedEventArgs e)
         {
             if (historySearchCustomer != null) historySearchCustomer.Text = "";
-            if (historyDatePicker != null) historyDatePicker.SelectedDate = null;
+            if (historyFromDatePicker != null) historyFromDatePicker.SelectedDate = null;
+            if (historyToDatePicker != null) historyToDatePicker.SelectedDate = null;
             ApplyHistoryFilters();
+        }
+
+        private void historySelectAllHeaderCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            bool isChecked = historySelectAllHeaderCheckBox?.IsChecked == true;
+            if (historyDataGrid.ItemsSource is IEnumerable<PrintRecordDisplay> list)
+            {
+                foreach (var item in list) item.IsSelected = isChecked;
+            }
+            UpdateHistorySelectionCount();
+        }
+
+        private void historyRowCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateHistorySelectionCount();
+        }
+
+        private void UpdateHistorySelectionCount()
+        {
+            var displayed = (historyDataGrid.ItemsSource as IEnumerable<PrintRecordDisplay>)?.ToList() ?? new List<PrintRecordDisplay>();
+            int total = displayed.Count;
+            int selected = displayed.Count(d => d.IsSelected);
+
+            if (historySelectAllHeaderCheckBox != null)
+            {
+                if (total == 0 || selected == 0)
+                    historySelectAllHeaderCheckBox.IsChecked = false;
+                else if (selected == total)
+                    historySelectAllHeaderCheckBox.IsChecked = true;
+                else
+                    historySelectAllHeaderCheckBox.IsChecked = null; // Indeterminate
+            }
+
+            if (historyCountText != null)
+            {
+                if (selected > 0)
+                    historyCountText.Text = $"Records: {total} ({selected} selected)";
+                else
+                    historyCountText.Text = $"Records: {total}";
+            }
         }
 
         public void PrintReceipt(FlowDocument doc)
@@ -875,8 +1134,11 @@ namespace InstantDealingApp
             bool? print = printDlg.ShowDialog();
             if (print != null && (print ?? false))
             {
-                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
-                printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
+                int copies = Math.Max(1, CurrentSettings.NumberOfCopies);
+                for (int c = 0; c < copies; c++)
+                {
+                    printDlg.PrintDocument(idpSource.DocumentPaginator, $"Printing Receipt ({c + 1}/{copies})");
+                }
             }
         }
 
@@ -896,6 +1158,74 @@ namespace InstantDealingApp
                 FlowDocument doc = CreateFlowDocumentFromRecord(record);
                 PrintReceipt(doc);
             }
+        }
+
+        public void PrintSelectedHistoryRecords()
+        {
+            var displayed = (historyDataGrid.ItemsSource as IEnumerable<PrintRecordDisplay>)?.ToList() ?? new List<PrintRecordDisplay>();
+            var selected = displayed.Where(d => d.IsSelected).ToList();
+
+            // If none checked via CheckBox, check if any row is selected in the DataGrid
+            if (selected.Count == 0 && historyDataGrid.SelectedItems.Count > 0)
+            {
+                foreach (var item in historyDataGrid.SelectedItems)
+                {
+                    if (item is PrintRecordDisplay d && !selected.Contains(d))
+                    {
+                        selected.Add(d);
+                    }
+                }
+            }
+
+            if (selected.Count == 0 && historyDataGrid.SelectedItem is PrintRecordDisplay currentItem)
+            {
+                selected.Add(currentItem);
+            }
+
+            if (selected.Count == 0)
+            {
+                MessageBox.Show("Please select one or more records from the history table to print.\n\nبراہ کرم پرنٹ کرنے کے لیے ایک یا زیادہ ریکارڈ منتخب کریں۔", "Print Receipt", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (selected.Count == 1)
+            {
+                PrintHistoryRecordById(selected[0].Id);
+                return;
+            }
+
+            // Batch print multiple records
+            var confirm = MessageBox.Show(
+                $"You have selected {selected.Count} receipts.\n\nDo you want to print all {selected.Count} receipts?\n\nکیا آپ تمام {selected.Count} منتخب رسیدیں پرنٹ کرنا چاہتے ہیں؟",
+                "Batch Print Receipts / رسیدیں پرنٹ کریں",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            PrintDialog printDlg = new PrintDialog();
+            bool? res = printDlg.ShowDialog();
+            if (res != true) return;
+
+            int copies = Math.Max(1, CurrentSettings.NumberOfCopies);
+            int printedCount = 0;
+
+            foreach (var display in selected)
+            {
+                var record = _allPrintRecords.FirstOrDefault(r => r.Id == display.Id);
+                if (record != null)
+                {
+                    FlowDocument doc = CreateFlowDocumentFromRecord(record);
+                    IDocumentPaginatorSource idp = doc;
+                    for (int c = 0; c < copies; c++)
+                    {
+                        printDlg.PrintDocument(idp.DocumentPaginator, $"History Receipt {display.FormattedDate} ({c + 1}/{copies})");
+                    }
+                    printedCount++;
+                }
+            }
+
+            MessageBox.Show($"Successfully sent {printedCount} receipts ({printedCount * copies} slips) to the printer.\n\nتمام رسیدیں پرنٹر پر بھیج دی گئی ہیں۔", "Batch Print Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
@@ -962,36 +1292,7 @@ namespace InstantDealingApp
 
         private void historyPrintSelected_Click(object sender, RoutedEventArgs e)
         {
-            if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
-            {
-                PrintHistoryRecordById(display.Id);
-            }
-            else
-            {
-                MessageBox.Show("Please select a record from the history table to print.", "Print Receipt", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
-
-        private void historyDataGrid_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var dep = e.OriginalSource as DependencyObject;
-            if (dep == null) return;
-
-            // If user clicked inside a Button (Open or Print), let the Button's Click event handle it
-            if (FindVisualParent<Button>(dep) != null) return;
-
-            // If user clicked column header (sorting), ignore
-            if (FindVisualParent<DataGridColumnHeader>(dep) != null) return;
-
-            // If user clicked a scrollbar, ignore
-            if (FindVisualParent<ScrollBar>(dep) != null) return;
-
-            // Identify clicked row
-            var row = FindVisualParent<DataGridRow>(dep);
-            if (row != null && row.Item is PrintRecordDisplay display)
-            {
-                PromptAndOpenRecord(display.Id);
-            }
+            PrintSelectedHistoryRecords();
         }
 
         private void historyDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -1000,6 +1301,7 @@ namespace InstantDealingApp
             if (dep == null) return;
             if (FindVisualParent<Button>(dep) != null) return;
             if (FindVisualParent<DataGridColumnHeader>(dep) != null) return;
+            if (FindVisualParent<CheckBox>(dep) != null) return;
 
             if (historyDataGrid.SelectedItem is PrintRecordDisplay display)
             {
@@ -1022,8 +1324,7 @@ namespace InstantDealingApp
 
         private void historyDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Row selection changes alone do not overwrite the Test tab.
-            // Populating the Test tab requires user confirmation via PromptAndOpenRecord.
+            UpdateHistorySelectionCount();
         }
 
         private void PopulateTestTabFromRecord(PrintRecord record)
@@ -1177,10 +1478,12 @@ namespace InstantDealingApp
             }
 
             FlowDocument flowDoc = new FlowDocument();
-            flowDoc.PageWidth = 288;
-            flowDoc.PagePadding = new Thickness(12);
+            flowDoc.PageWidth = IsSmallSlipSelected ? 190 : 288;
+            flowDoc.PagePadding = IsSmallSlipSelected ? new Thickness(4) : new Thickness(12);
             flowDoc.FontFamily = new FontFamily("Cambria");
-            flowDoc.FontSize = 16;
+            int baseFontSize = (IsSmallSlipSelected ? 11 : 16) + CurrentSettings.FontSizeDelta;
+            flowDoc.FontSize = Math.Max(8, baseFontSize);
+            flowDoc.FontWeight = CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal;
             flowDoc.Background = Brushes.White;
 
             // Header Section
@@ -2603,8 +2906,11 @@ namespace InstantDealingApp
             {
                 try
                 {
-                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Batch Receipt.");
-                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
+                    int copies = Math.Max(1, CurrentSettings.NumberOfCopies);
+                    for (int c = 0; c < copies; c++)
+                    {
+                        printDlg.PrintDocument(idpSource.DocumentPaginator, $"Printing Batch Receipt ({c + 1}/{copies})");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -2690,11 +2996,33 @@ namespace InstantDealingApp
 
         private void SelectAllCheckBoxes_Click(object sender, RoutedEventArgs e)
         {
+            if (mainTabControl.SelectedItem == historyTab)
+            {
+                if (historyDataGrid.ItemsSource is IEnumerable<PrintRecordDisplay> list)
+                {
+                    foreach (var item in list) item.IsSelected = true;
+                }
+                if (historySelectAllHeaderCheckBox != null) historySelectAllHeaderCheckBox.IsChecked = true;
+                UpdateHistorySelectionCount();
+                return;
+            }
+
             SetAllCheckBoxesState(true);
         }
 
         private void DeselectAllCheckBoxes_Click(object sender, RoutedEventArgs e)
         {
+            if (mainTabControl.SelectedItem == historyTab)
+            {
+                if (historyDataGrid.ItemsSource is IEnumerable<PrintRecordDisplay> list)
+                {
+                    foreach (var item in list) item.IsSelected = false;
+                }
+                if (historySelectAllHeaderCheckBox != null) historySelectAllHeaderCheckBox.IsChecked = false;
+                UpdateHistorySelectionCount();
+                return;
+            }
+
             SetAllCheckBoxesState(false);
         }
 
@@ -2720,16 +3048,13 @@ namespace InstantDealingApp
         {
             if (mainTabControl.SelectedItem == historyTab)
             {
-                if (historyDataGrid.SelectedItem is PrintRecordDisplay selectedDisplay)
-                {
-                    PrintHistoryRecordById(selectedDisplay.Id);
-                    return;
-                }
-                else
-                {
-                    MessageBox.Show("Please select a record from the history table to print.", "Print Receipt", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
+                PrintSelectedHistoryRecords();
+                return;
+            }
+            else if (mainTabControl.SelectedItem == settingsTab)
+            {
+                SaveAppSettings();
+                return;
             }
             else if (mainTabControl.SelectedItem == multiTestTab)
             {
@@ -2752,8 +3077,11 @@ namespace InstantDealingApp
             {
                 try
                 {
-                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing Reciept.");
-                    printDlg.PrintDocument(idpSource.DocumentPaginator, "Printing.");
+                    int copies = Math.Max(1, CurrentSettings.NumberOfCopies);
+                    for (int c = 0; c < copies; c++)
+                    {
+                        printDlg.PrintDocument(idpSource.DocumentPaginator, $"Printing Receipt ({c + 1}/{copies})");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -2776,7 +3104,9 @@ namespace InstantDealingApp
             flowDoc.PageWidth = pageWidth;
             flowDoc.PagePadding = IsSmallSlipSelected ? new Thickness(4) : new Thickness(12);
             flowDoc.FontFamily = new FontFamily("Cambria");
-            flowDoc.FontSize = IsSmallSlipSelected ? 11 : 16;
+            int baseFontSize = (IsSmallSlipSelected ? 11 : 16) + CurrentSettings.FontSizeDelta;
+            flowDoc.FontSize = Math.Max(8, baseFontSize);
+            flowDoc.FontWeight = CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal;
             flowDoc.Background = Brushes.White;
 
             // Header Section
@@ -3025,7 +3355,9 @@ namespace InstantDealingApp
             flowDoc.PageWidth = pageWidth;
             flowDoc.PagePadding = IsSmallSlipSelected ? new Thickness(4) : new Thickness(12);
             flowDoc.FontFamily = new FontFamily("Cambria");
-            flowDoc.FontSize = IsSmallSlipSelected ? 11 : 15;
+            int baseFontSize = (IsSmallSlipSelected ? 11 : 15) + CurrentSettings.FontSizeDelta;
+            flowDoc.FontSize = Math.Max(8, baseFontSize);
+            flowDoc.FontWeight = CurrentSettings.IsBoldEnabled ? FontWeights.Bold : FontWeights.Normal;
             flowDoc.Background = Brushes.White;
 
             // Header Section
@@ -3379,7 +3711,20 @@ namespace InstantDealingApp
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
-            if (mainTabControl.SelectedItem == multiTestTab)
+            if (mainTabControl.SelectedItem == historyTab)
+            {
+                historyClearFilters_Click(this, new RoutedEventArgs());
+                if (historyDataGrid.ItemsSource is IEnumerable<PrintRecordDisplay> list)
+                {
+                    foreach (var item in list) item.IsSelected = false;
+                }
+                UpdateHistorySelectionCount();
+            }
+            else if (mainTabControl.SelectedItem == settingsTab)
+            {
+                btnRestoreSettingsDefaults_Click(this, new RoutedEventArgs());
+            }
+            else if (mainTabControl.SelectedItem == multiTestTab)
             {
                 ClearAllMultiTestFields();
             }
@@ -3522,8 +3867,28 @@ namespace InstantDealingApp
         public string ReceiptXaml { get; set; } = "";
     }
 
-    public class PrintRecordDisplay
+    public class PrintRecordDisplay : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged(nameof(IsSelected));
+                }
+            }
+        }
+
         public string Id { get; set; } = "";
         public DateTime Timestamp { get; set; }
         public string FormattedDate => Timestamp.ToString("dd-MMM-yyyy hh:mm tt");
@@ -3562,5 +3927,13 @@ namespace InstantDealingApp
         public double GoldRateValue { get; set; }
         public string GoldRateDisplay => GoldRateValue > 0 ? GoldRateValue.ToString("N0") : "-";
         public string NotesDisplay { get; set; } = "-";
+    }
+
+    public class AppSettings
+    {
+        public int NumberOfCopies { get; set; } = 2;
+        public bool IsSmallSlip { get; set; } = false;
+        public int FontSizeDelta { get; set; } = 0;
+        public bool IsBoldEnabled { get; set; } = true;
     }
 }

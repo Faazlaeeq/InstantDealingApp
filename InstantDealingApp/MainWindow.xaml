@@ -1022,49 +1022,58 @@
                     </Grid.RowDefinitions>
 
                     <!-- Top Filter Bar -->
-                    <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="12,10,12,10" Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="200" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="180" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="10" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
+                    <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="10,8,10,8" Margin="0,0,0,10">
+                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- Customer Filter -->
-                            <TextBlock Grid.Column="0" Text="Customer:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,8,0" />
-                            <TextBox x:Name="historySearchCustomer" Grid.Column="1" Height="40" FontSize="18" FontWeight="Bold" VerticalContentAlignment="Center" Padding="6,2" TextChanged="historyFilter_Changed" ToolTip="Search by customer name" />
+                            <StackPanel Orientation="Horizontal" Margin="0,4,10,4" VerticalAlignment="Center">
+                                <TextBlock Text="Customer:" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,0,6,0" />
+                                <TextBox x:Name="historySearchCustomer" Width="120" Height="36" FontSize="16" FontWeight="Bold" VerticalContentAlignment="Center" Padding="4,2" TextChanged="historyFilter_Changed" ToolTip="Search by customer name" />
+                            </StackPanel>
 
-                            <!-- Date Filter -->
-                            <TextBlock Grid.Column="3" Text="Date:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,8,0" />
-                            <DatePicker x:Name="historyDatePicker" Grid.Column="4" Height="40" FontSize="18" FontWeight="Bold" VerticalContentAlignment="Center" SelectedDateChanged="historyFilter_Changed" ToolTip="Filter by date">
-                                <DatePicker.CalendarStyle>
-                                    <Style TargetType="Calendar">
-                                        <Setter Property="LayoutTransform">
-                                            <Setter.Value>
-                                                <ScaleTransform ScaleX="1.6" ScaleY="1.6" />
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </DatePicker.CalendarStyle>
-                            </DatePicker>
+                            <!-- From Date Filter -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,10,4" VerticalAlignment="Center">
+                                <TextBlock Text="From:" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,0,6,0" />
+                                <DatePicker x:Name="historyFromDatePicker" Width="135" Height="36" FontSize="15" FontWeight="Bold" VerticalContentAlignment="Center" SelectedDateChanged="historyFilter_Changed" ToolTip="Start date for filtering">
+                                    <DatePicker.CalendarStyle>
+                                        <Style TargetType="Calendar">
+                                            <Setter Property="LayoutTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DatePicker.CalendarStyle>
+                                </DatePicker>
+                            </StackPanel>
+
+                            <!-- To Date Filter -->
+                            <StackPanel Orientation="Horizontal" Margin="0,4,10,4" VerticalAlignment="Center">
+                                <TextBlock Text="To:" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,0,6,0" />
+                                <DatePicker x:Name="historyToDatePicker" Width="135" Height="36" FontSize="15" FontWeight="Bold" VerticalContentAlignment="Center" SelectedDateChanged="historyFilter_Changed" ToolTip="End date for filtering">
+                                    <DatePicker.CalendarStyle>
+                                        <Style TargetType="Calendar">
+                                            <Setter Property="LayoutTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DatePicker.CalendarStyle>
+                                </DatePicker>
+                            </StackPanel>
+
+                            <!-- This Month Button -->
+                            <Button x:Name="historyThisMonthBtn" Height="36" Padding="10,0" Margin="0,4,6,4" Content="This Month / پورا مہینہ" FontSize="14" FontWeight="Bold" Background="#EFF6FF" Foreground="#1E40AF" BorderBrush="#93C5FD" Click="historyThisMonth_Click" ToolTip="Filter for current month (1st to last day)" />
 
                             <!-- Clear Filters Button -->
-                            <Button x:Name="historyClearFiltersBtn" Grid.Column="6" Height="40" Padding="16,0" Content="Clear Filters" FontSize="16" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="historyClearFilters_Click" />
+                            <Button x:Name="historyClearFiltersBtn" Height="36" Padding="10,0" Margin="0,4,6,4" Content="Clear / صاف کریں" FontSize="14" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="historyClearFilters_Click" ToolTip="Reset customer search and date filters" />
 
                             <!-- Print Selected Receipt Button -->
-                            <Button x:Name="historyPrintSelectedBtn" Grid.Column="8" Height="40" Padding="16,0" Content="Print Receipt / پرنٹ" FontSize="16" FontWeight="Bold" Background="#0284C7" Foreground="#FFFFFF" BorderBrush="#0369A1" Click="historyPrintSelected_Click" ToolTip="Print exact receipt of selected history record" />
+                            <Button x:Name="historyPrintSelectedBtn" Height="36" Padding="12,0" Margin="0,4,6,4" Content="Print Selected / پرنٹ" FontSize="14" FontWeight="Bold" Background="#0284C7" Foreground="#FFFFFF" BorderBrush="#0369A1" Click="historyPrintSelected_Click" ToolTip="Print exact receipt(s) of selected history record(s)" />
 
                             <!-- Records Count Text -->
-                            <TextBlock x:Name="historyCountText" Grid.Column="10" Text="Records: 0" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#0284C7" />
-                        </Grid>
+                            <TextBlock x:Name="historyCountText" Text="Records: 0" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#0284C7" Margin="6,4,0,4" />
+                        </WrapPanel>
                     </Border>
 
                     <!-- DataGrid (GridView) -->
@@ -1085,9 +1094,8 @@
                                   Background="#FFFFFF"
                                   AlternatingRowBackground="#F8FAFC"
                                   BorderThickness="0"
-                                  SelectionMode="Single"
+                                  SelectionMode="Extended"
                                   SelectionUnit="FullRow"
-                                  PreviewMouseLeftButtonUp="historyDataGrid_PreviewMouseLeftButtonUp"
                                   MouseDoubleClick="historyDataGrid_MouseDoubleClick"
                                   PreviewKeyDown="historyDataGrid_PreviewKeyDown"
                                   SelectionChanged="historyDataGrid_SelectionChanged">
@@ -1104,8 +1112,27 @@
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
                             <DataGrid.Columns>
+                                <!-- Col 0: CheckBox Select -->
+                                <DataGridTemplateColumn Width="46" CanUserSort="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <CheckBox x:Name="historySelectAllHeaderCheckBox" 
+                                                  Click="historySelectAllHeaderCheckBox_Click" 
+                                                  ToolTip="Select / Deselect All Records" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center" />
+                                    </DataGridTemplateColumn.Header>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                      Click="historyRowCheckBox_Click"
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
                                 <!-- Col 1: Date & Time -->
-                                <DataGridTextColumn Header="Date &amp; Time" Binding="{Binding FormattedDate}" Width="180" SortMemberPath="Timestamp">
+                                <DataGridTextColumn Header="Date &amp; Time" Binding="{Binding FormattedDate}" Width="165" SortMemberPath="Timestamp">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1116,7 +1143,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 2: Customer Name -->
-                                <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="120" SortMemberPath="CustomerName">
+                                <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="110" SortMemberPath="CustomerName">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1128,7 +1155,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 3: Item (Metal & Type) -->
-                                <DataGridTextColumn Header="Item" Binding="{Binding ItemDisplay}" Width="130" SortMemberPath="ItemDisplay">
+                                <DataGridTextColumn Header="Item" Binding="{Binding ItemDisplay}" Width="115" SortMemberPath="ItemDisplay">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1140,7 +1167,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 4: Ratti -->
-                                <DataGridTextColumn Header="Ratti" Binding="{Binding RattiDisplay}" Width="58" SortMemberPath="RattiValue">
+                                <DataGridTextColumn Header="Ratti" Binding="{Binding RattiDisplay}" Width="55" SortMemberPath="RattiValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1151,8 +1178,8 @@
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
 
-                                <!-- Col 4: Karat -->
-                                <DataGridTextColumn Header="Karat" Binding="{Binding KaratDisplay}" Width="58" SortMemberPath="KaratValue">
+                                <!-- Col 5: Karat -->
+                                <DataGridTextColumn Header="Karat" Binding="{Binding KaratDisplay}" Width="55" SortMemberPath="KaratValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1164,7 +1191,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 6: Total Weight -->
-                                <DataGridTextColumn Header="Total Wt" Binding="{Binding TotalWeightDisplay}" Width="90" SortMemberPath="TotalWeightValue">
+                                <DataGridTextColumn Header="Total Wt" Binding="{Binding TotalWeightDisplay}" Width="85" SortMemberPath="TotalWeightValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1176,7 +1203,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 7: Pure Gold -->
-                                <DataGridTextColumn Header="Pure Gold" Binding="{Binding PureGoldDisplay}" Width="92" SortMemberPath="PureGoldValue">
+                                <DataGridTextColumn Header="Pure Gold" Binding="{Binding PureGoldDisplay}" Width="85" SortMemberPath="PureGoldValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1188,7 +1215,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 8: Labor Charges -->
-                                <DataGridTextColumn Header="Labor" Binding="{Binding LaborDisplay}" Width="65" SortMemberPath="LaborValue">
+                                <DataGridTextColumn Header="Labor" Binding="{Binding LaborDisplay}" Width="60" SortMemberPath="LaborValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1200,7 +1227,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 9: Cash Amount -->
-                                <DataGridTextColumn Header="Cash (Rs)" Binding="{Binding CashDisplay}" Width="95" SortMemberPath="CashValue">
+                                <DataGridTextColumn Header="Cash (Rs)" Binding="{Binding CashDisplay}" Width="90" SortMemberPath="CashValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1213,7 +1240,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 10: Gold Rate -->
-                                <DataGridTextColumn Header="Gold Rate" Binding="{Binding GoldRateDisplay}" Width="90" SortMemberPath="GoldRateValue">
+                                <DataGridTextColumn Header="Gold Rate" Binding="{Binding GoldRateDisplay}" Width="85" SortMemberPath="GoldRateValue">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1225,7 +1252,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 11: Notes / Status -->
-                                <DataGridTextColumn Header="Notes" Binding="{Binding NotesDisplay}" Width="65" SortMemberPath="NotesDisplay">
+                                <DataGridTextColumn Header="Notes" Binding="{Binding NotesDisplay}" Width="60" SortMemberPath="NotesDisplay">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center" />
@@ -1237,7 +1264,7 @@
                                 </DataGridTextColumn>
 
                                 <!-- Col 12: Action Buttons (Open & Print) -->
-                                <DataGridTemplateColumn Header="Action" Width="180">
+                                <DataGridTemplateColumn Header="Action" Width="170">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -1286,6 +1313,146 @@
                         </DataGrid>
                     </Border>
                 </Grid>
+            </TabItem>
+
+            <!-- Settings Tab -->
+            <TabItem Header="Settings" x:Name="settingsTab" FontSize="38" FontWeight="Bold" Width="170" Background="#E0E7FF">
+                <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="16" MaxWidth="800" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical">
+
+                            <!-- Section 1: Number of Slips Printed -->
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Number of Slips Printed / پرنٹ کی کاپیاں" FontSize="20" FontWeight="Bold" Foreground="#1E3A8A" />
+                                            <TextBlock Text="How many slips should be printed automatically when clicking Print (e.g. 1 for customer, 2 for customer + shop copy)." FontSize="14" FontWeight="Normal" Foreground="#64748B" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8,0,10">
+                                        <Button x:Name="btnDecreaseCopies" Content="−" Width="44" Height="44" FontSize="24" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnDecreaseCopies_Click" ToolTip="Decrease copies" />
+                                        <TextBox x:Name="txtSettingCopies" Width="70" Height="44" FontSize="22" FontWeight="Bold" TextAlignment="Center" VerticalContentAlignment="Center" Text="2" IsReadOnly="True" Background="#F8FAFC" BorderBrush="#CBD5E1" Margin="8,0" />
+                                        <Button x:Name="btnIncreaseCopies" Content="+" Width="44" Height="44" FontSize="24" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnIncreaseCopies_Click" ToolTip="Increase copies" />
+
+                                        <!-- Quick Presets -->
+                                        <Button Content="1 Copy / ایک کاپی" Height="40" Padding="12,0" Margin="24,0,8,0" FontSize="14" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnPresetCopies_Click" Tag="1" />
+                                        <Button Content="2 Copies / دو کاپیاں" Height="40" Padding="12,0" Margin="0,0,8,0" FontSize="14" FontWeight="Bold" Background="#E0F2FE" Foreground="#0369A1" BorderBrush="#0284C7" Click="btnPresetCopies_Click" Tag="2" />
+                                        <Button Content="3 Copies / تین کاپیاں" Height="40" Padding="12,0" Margin="0,0,0,0" FontSize="14" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnPresetCopies_Click" Tag="3" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Section 2: Slip Size Setting -->
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Thermal Printer Slip Size / پرنٹ سائز" FontSize="20" FontWeight="Bold" Foreground="#1E3A8A" />
+                                    <TextBlock Text="Choose paper width for your thermal receipt printer. Changes apply to both Single and Multi Test receipts." FontSize="14" FontWeight="Normal" Foreground="#64748B" TextWrapping="Wrap" Margin="0,2,0,10" />
+
+                                    <Grid Margin="0,4,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Large 80mm Option -->
+                                        <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="8" Padding="14,12">
+                                            <RadioButton x:Name="radioSettingsSlipLarge" GroupName="SettingsSlipSize" IsChecked="True" Checked="settingsSlipSize_Checked" VerticalAlignment="Center">
+                                                <StackPanel Margin="6,0,0,0">
+                                                    <TextBlock Text="Large Print (80mm / 3.15&quot;)" FontSize="16" FontWeight="Bold" Foreground="#1E293B" />
+                                                    <TextBlock Text="Standard 3-inch thermal printer (بڑا سائز)" FontSize="13" FontWeight="Normal" Foreground="#64748B" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </RadioButton>
+                                        </Border>
+
+                                        <!-- Small 58mm Option -->
+                                        <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="8" Padding="14,12">
+                                            <RadioButton x:Name="radioSettingsSlipSmall" GroupName="SettingsSlipSize" Checked="settingsSlipSize_Checked" VerticalAlignment="Center">
+                                                <StackPanel Margin="6,0,0,0">
+                                                    <TextBlock Text="Small Print (58mm / 2.28&quot;)" FontSize="16" FontWeight="Bold" Foreground="#1E293B" />
+                                                    <TextBlock Text="Compact 2-inch thermal printer (چھوٹا سائز)" FontSize="13" FontWeight="Normal" Foreground="#64748B" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </RadioButton>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Section 3: Font Size Increase / Decrease -->
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Font Size Adjustment / فونٹ کا سائز" FontSize="20" FontWeight="Bold" Foreground="#1E3A8A" />
+                                    <TextBlock Text="Scale text larger or smaller across software screens and printed receipts." FontSize="14" FontWeight="Normal" Foreground="#64748B" TextWrapping="Wrap" Margin="0,2,0,10" />
+
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,4,0,12">
+                                        <Button x:Name="btnDecreaseFontSize" Content="A− Smaller / چھوٹا" Height="42" Padding="14,0" Margin="0,0,10,0" FontSize="15" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnDecreaseFontSize_Click" ToolTip="Decrease font size by 1px" />
+                                        <Button x:Name="btnResetFontSize" Content="Default (0px) / اصل سائز" Height="42" Padding="14,0" Margin="0,0,10,0" FontSize="15" FontWeight="Bold" Background="#EFF6FF" Foreground="#1E40AF" BorderBrush="#93C5FD" Click="btnResetFontSize_Click" ToolTip="Reset font size to default" />
+                                        <Button x:Name="btnIncreaseFontSize" Content="A+ Larger / بڑا" Height="42" Padding="14,0" Margin="0,0,16,0" FontSize="15" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnIncreaseFontSize_Click" ToolTip="Increase font size by 1px" />
+
+                                        <Border Background="#F1F5F9" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
+                                            <TextBlock x:Name="txtSettingFontSizeDelta" Text="Current: Normal (0px)" FontSize="15" FontWeight="Bold" Foreground="#0284C7" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Live Sample Preview -->
+                                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="12,8">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Preview / نمونہ: " FontSize="14" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="txtSettingSamplePreview" Text="Instant Dealing — Gold 10.500g — Result 92.5 Ratti — خالص سونا" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Section 4: Bold / Unbold Option -->
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Bold / Regular Text / تحریر کی موٹائی (بولڈ)" FontSize="20" FontWeight="Bold" Foreground="#1E3A8A" />
+                                    <TextBlock Text="Toggle between extra-bold high visibility font and regular weight font." FontSize="14" FontWeight="Normal" Foreground="#64748B" TextWrapping="Wrap" Margin="0,2,0,10" />
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="8" Padding="16,10" Margin="0,0,16,0">
+                                            <RadioButton x:Name="radioSettingBold" GroupName="SettingsBoldOption" IsChecked="True" Checked="settingsBold_Checked" VerticalAlignment="Center">
+                                                <TextBlock Text="Bold (Default) / بولڈ تحریر" FontSize="16" FontWeight="Bold" Foreground="#1E293B" Margin="6,0,0,0" />
+                                            </RadioButton>
+                                        </Border>
+
+                                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="2" CornerRadius="8" Padding="16,10">
+                                            <RadioButton x:Name="radioSettingRegular" GroupName="SettingsBoldOption" Checked="settingsBold_Checked" VerticalAlignment="Center">
+                                                <TextBlock Text="Regular / عام تحریر" FontSize="16" FontWeight="Normal" Foreground="#1E293B" Margin="6,0,0,0" />
+                                            </RadioButton>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Section 5: Save Settings & Status -->
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button x:Name="btnSaveSettings" Grid.Column="0" Content="Save Settings / ترتیبات محفوظ کریں" Height="46" Padding="20,0" FontSize="16" FontWeight="Bold" Background="#059669" Foreground="#FFFFFF" BorderBrush="#047857" Click="btnSaveSettings_Click" />
+                                    <Button x:Name="btnRestoreSettingsDefaults" Grid.Column="2" Content="Restore Defaults / پہلے والی حالت" Height="46" Padding="18,0" FontSize="15" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="btnRestoreSettingsDefaults_Click" />
+
+                                    <TextBlock x:Name="txtSettingsStatus" Grid.Column="4" Text="" FontSize="15" FontWeight="Bold" Foreground="#059669" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
 

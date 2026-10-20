@@ -136,7 +136,7 @@
         <TabControl x:Name="mainTabControl" Grid.Row="0" SelectionChanged="TabControl_SelectionChanged">
 
             <!-- Test Tab (First Tab) -->
-            <TabItem Header="Test" x:Name="testTab" FontSize="38" FontWeight="Bold" Width="100">
+            <TabItem Header="Test" x:Name="testTab" FontSize="38" FontWeight="Bold" Width="Auto" MinWidth="150" Padding="18,4">
                 <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid VerticalAlignment="Top">
                         <Grid.RowDefinitions>
@@ -452,13 +452,14 @@
                                             <Run Text="Notes / " FontWeight="Bold" />
                                             <Run Text="نوٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" FontWeight="Bold" />
                                         </TextBlock>
-                                        <CheckBox x:Name="doPrintNotes" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Click="PrintCheckBox_Click" IsTabStop="False" ToolTip="Print Notes on Receipt" />
+                                        <CheckBox x:Name="doPrintNotes" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Click="PrintCheckBox_Click" IsTabStop="False" ToolTip="Print Notes on Receipt" />
                                     </Grid>
 
                                     <!-- Row 1: Multiline Notes TextBox -->
                                     <TextBox x:Name="notesTextboxTest" Grid.Row="1" FontSize="20" FontWeight="Bold" Height="170"
                                              AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                              Padding="8" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1"
+                                             VerticalContentAlignment="Top" HorizontalContentAlignment="Left" TextAlignment="Left"
                                              TextChanged="notesTextboxTest_TextChanged"
                                              TextBlock.FontSize="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
                                 </Grid>
@@ -469,7 +470,7 @@
             </TabItem>
 
             <!-- Multi Test Tab (Second Tab) -->
-            <TabItem Header="Multi Test" x:Name="multiTestTab" FontSize="38" FontWeight="Bold" Width="180">
+            <TabItem Header="Multi Test" x:Name="multiTestTab" FontSize="38" FontWeight="Bold" Width="Auto" MinWidth="260" Padding="18,4">
                 <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid VerticalAlignment="Top">
                         <Grid.RowDefinitions>
@@ -549,11 +550,11 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" MinWidth="220" MaxWidth="285" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="40" />
                             </Grid.ColumnDefinitions>
 
                             <!-- Today Gold Rate (Row 0) -->
@@ -571,6 +572,7 @@
                                 <TextBlock Grid.Column="1" Text=" - " VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Margin="6,0,6,0" Foreground="#64748B" />
                                 <TextBox x:Name="goldRateDiffTextboxMulti" Grid.Column="2" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" Padding="4,2,4,2" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="goldRateDiffTextboxMulti_TextChanged" TextBlock.FontSize="24"/>
                             </Grid>
+                            <CheckBox IsChecked="False" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintGoldRateMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
                             <!-- Select Customer (Row 1) -->
                             <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
@@ -578,51 +580,59 @@
                                 <Run Text="کسٹمر:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
                             </TextBlock>
                             <ComboBox x:Name="customersMulti" Grid.Row="1" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" IsEditable="True" Height="42" LostFocus="customersComboBox_LostFocus" GotFocus="customers_GotFocus" TextBlock.FontSize="24" FontSize="20" FontWeight="Bold"/>
+                            <CheckBox IsChecked="True" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintCustomerNameMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Weight (Row 2) -->
+                            <!-- Weight and Taka in one line (Row 2) -->
                             <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
                                 <Run Text="Weight / " FontWeight="Bold" />
                                 <Run Text="وزن:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
                             </TextBlock>
-                            <TextBox x:Name="weightInputTextboxMulti" Grid.Row="2" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="weightTakaMulti_TextChanged" TextBlock.FontSize="24"/>
+                            <Grid Grid.Row="2" Grid.Column="1" Margin="0,4,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="80" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="weightInputTextboxMulti" Grid.Column="0" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="weightTakaMulti_TextChanged" TextBlock.FontSize="24"/>
+                                <TextBlock Grid.Column="1" Text=" - " VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Margin="6,0,6,0" Foreground="#64748B" />
+                                <TextBox x:Name="takaTextboxMulti" Grid.Column="2" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="weightTakaMulti_TextChanged" TextBlock.FontSize="24" ToolTip="Taka (Deduction)"/>
+                            </Grid>
+                            <CheckBox IsChecked="False" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintWeightMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Taka (Row 3) -->
+                            <!-- Total Weight (Row 3) -->
                             <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
-                                <Run Text="Taka / " FontWeight="Bold" />
-                                <Run Text="ٹانکہ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
-                            </TextBlock>
-                            <TextBox x:Name="takaTextboxMulti" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="weightTakaMulti_TextChanged" TextBlock.FontSize="24"/>
-
-                            <!-- Total Weight (Row 4) -->
-                            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
                                 <Run Text="Total Weight / " FontWeight="Bold" />
                                 <Run Text="کل وزن:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
                             </TextBlock>
-                            <TextBox x:Name="totalWeightTextboxMulti" Grid.Row="4" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="testTabInputsMulti_TextChanged" TextBlock.FontSize="24" IsEnabled="False" Background="#F1F5F9" Foreground="#0F172A"/>
+                            <TextBox x:Name="totalWeightTextboxMulti" Grid.Row="3" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="testTabInputsMulti_TextChanged" TextBlock.FontSize="24" IsEnabled="False" Background="#F1F5F9" Foreground="#0F172A"/>
+                            <CheckBox IsChecked="True" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintTotalWeightMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Result (Ratti) (Row 5) -->
-                            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                            <!-- Result (Ratti) (Row 4) -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
                                 <Run Text="Result (Ratti) / " FontWeight="Bold" />
                                 <Run Text="رزلٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
                             </TextBlock>
-                            <TextBox x:Name="resultTextboxMulti" Grid.Row="5" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="testTabInputsMulti_TextChanged" TextBlock.FontSize="24"/>
+                            <TextBox x:Name="resultTextboxMulti" Grid.Row="4" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="testTabInputsMulti_TextChanged" TextBlock.FontSize="24"/>
+                            <CheckBox IsChecked="True" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintResultMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Pure Gold (Row 6) -->
-                            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                            <!-- Pure Gold (Row 5) -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
                                 <Run Text="Pure Gold / " FontWeight="Bold" />
                                 <Run Text="خالص سونا:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
                             </TextBlock>
-                            <TextBox x:Name="pureGoldTextboxMulti" Grid.Row="6" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" IsEnabled="False" TextBlock.FontSize="24"/>
+                            <TextBox x:Name="pureGoldTextboxMulti" Grid.Row="5" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" IsEnabled="False" TextBlock.FontSize="24"/>
+                            <CheckBox IsChecked="True" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintPureGoldMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Labor Charges (Row 7) -->
-                            <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
+                            <!-- Labor Charges (Row 6) -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" FontSize="24" FontWeight="Bold" Margin="0,4,8,4">
                                 <Run Text="Labor Charges / " FontWeight="Bold" />
                                 <Run Text="مزدوری:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="28" FontWeight="Bold" />
                             </TextBlock>
-                            <TextBox x:Name="laborTextboxMulti" Grid.Row="7" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" LostFocus="laborTextboxMulti_LostFocus" TextChanged="laborTextboxMulti_TextChanged" TextBlock.FontSize="24"/>
+                            <TextBox x:Name="laborTextboxMulti" Grid.Row="6" Grid.Column="1" Margin="0,4,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" LostFocus="laborTextboxMulti_LostFocus" TextChanged="laborTextboxMulti_TextChanged" TextBlock.FontSize="24"/>
+                            <CheckBox IsChecked="True" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" x:Name="doPrintLaborMulti" Click="PrintCheckBox_Click" IsTabStop="False"/>
 
-                            <!-- Bottom Cash Cards (Row 8) -->
-                            <Grid Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0">
+                            <!-- Bottom Cash Cards (Row 7, Spans Col 0 to Col 2) - No Urdu Text -->
+                            <Grid Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="8" />
@@ -632,28 +642,36 @@
                                 <!-- Card 1: Cash Without Labor -->
                                 <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1.5" CornerRadius="8" Padding="6,4">
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Margin="2,0,2,2" VerticalAlignment="Center" TextAlignment="Center" FontSize="15.5" FontWeight="Bold" Foreground="#334155">
-                                            <Run Text="Cash Without Labor / " FontWeight="Bold" />
-                                            <Run Text="کیش - بغیر مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="19" FontWeight="Bold" />
-                                        </TextBlock>
-                                        <TextBox x:Name="grossPureGoldCashTextboxMulti" Height="44" Text="0" FontSize="22" FontWeight="Bold" Foreground="#0F172A" Background="#FFFFFF" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" BorderThickness="1" BorderBrush="#CBD5E1"/>
+                                        <TextBlock Margin="2,0,2,2" VerticalAlignment="Center" TextAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Text="Cash Without Labor" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="grossPureGoldCashTextboxMulti" Grid.Column="0" Height="44" Text="0" FontSize="22" FontWeight="Bold" Foreground="#0F172A" Background="#FFFFFF" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" BorderThickness="1" BorderBrush="#CBD5E1"/>
+                                            <CheckBox x:Name="doPrintGrossPureGoldCashMulti" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Margin="6,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
 
                                 <!-- Card 2: Cash With Labor -->
                                 <Border Grid.Column="2" Background="#F0FDF4" BorderBrush="#BBF7D0" BorderThickness="1.5" CornerRadius="8" Padding="6,4">
                                     <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Margin="2,0,2,2" VerticalAlignment="Center" TextAlignment="Center" FontSize="15.5" FontWeight="Bold" Foreground="#166534">
-                                            <Run Text="Cash With Labor / " FontWeight="Bold" />
-                                            <Run Text="کیش - بمعہ مزدوری" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="19" FontWeight="Bold" />
-                                        </TextBlock>
-                                        <TextBox x:Name="totalPureGoldCashTextboxMulti" Height="44" Text="0" FontSize="22" FontWeight="Bold" Foreground="#059669" Background="#FFFFFF" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" BorderThickness="1.5" BorderBrush="#86EFAC"/>
+                                        <TextBlock Margin="2,0,2,2" VerticalAlignment="Center" TextAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#166534" Text="Cash With Labor" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="totalPureGoldCashTextboxMulti" Grid.Column="0" Height="44" Text="0" FontSize="22" FontWeight="Bold" Foreground="#059669" Background="#FFFFFF" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" BorderThickness="1.5" BorderBrush="#86EFAC"/>
+                                            <CheckBox x:Name="doPrintTotalPureGoldCashMulti" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" Margin="6,0,0,0" Click="PrintCheckBox_Click" IsTabStop="False"/>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
                             </Grid>
 
-                            <!-- Add Item to Batch Button (Row 9) -->
-                            <Button x:Name="addBatchItemBtn" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Height="48" Margin="0,10,0,0" Background="#059669" BorderBrush="#047857" Click="addBatchItemBtn_Click" Cursor="Hand">
+                            <!-- Add Item to Batch Button (Row 8, Spans Col 0 to Col 2) -->
+                            <Button x:Name="addBatchItemBtn" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Height="48" Margin="0,10,0,0" Background="#059669" BorderBrush="#047857" Click="addBatchItemBtn_Click" Cursor="Hand">
                                 <TextBlock FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center">
                                     <Run Text="+ Add Item to Batch / " FontWeight="Bold" />
                                     <Run Text="فہرست میں شامل کریں" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="24" FontWeight="Bold" />
@@ -665,109 +683,93 @@
                         <Grid Grid.Row="1" Grid.Column="1" Margin="6,6,12,6">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <!-- Conversion Column Headers (Row 0) -->
+                            <!-- Row 0: Karat and Purity % in one row -->
                             <Grid Grid.Row="0" Margin="0,4,0,4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="10" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155">
-                                    <Run Text="Sample Wt / " FontWeight="Bold" />
-                                    <Run Text="وزن سیمپل" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
-                                </TextBlock>
-                                <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155">
-                                    <Run Text="Result Wt / " FontWeight="Bold" />
-                                    <Run Text="وزن رزلٹ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
-                                </TextBlock>
+
+                                <!-- Col 0: Karat -->
+                                <Grid Grid.Column="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Margin="0,2,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155">
+                                            <Run Text="Karat / " FontWeight="Bold" />
+                                            <Run Text="کیریٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="22" FontWeight="Bold" />
+                                        </TextBlock>
+                                        <CheckBox x:Name="doPrintKaratMulti" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Click="PrintCheckBox_Click" IsTabStop="False" />
+                                    </Grid>
+                                    <TextBox x:Name="karatInputTextboxMulti" Grid.Row="1" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="karatInputMulti_TextChanged" TextBlock.FontSize="24"/>
+                                </Grid>
+
+                                <!-- Col 2: Purity % -->
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0" Margin="0,2,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155">
+                                            <Run Text="Purity % / " FontWeight="Bold" />
+                                            <Run Text="فیصد خالص:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="22" FontWeight="Bold" />
+                                        </TextBlock>
+                                        <CheckBox x:Name="doPrintPurityPercentMulti" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Click="PrintCheckBox_Click" IsTabStop="False" />
+                                    </Grid>
+                                    <TextBox x:Name="purityPercentTextboxMulti" Grid.Row="1" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="purityPercentMulti_TextChanged" TextBlock.FontSize="24"/>
+                                </Grid>
                             </Grid>
 
-                            <!-- Conversion Inputs (Row 1) -->
-                            <Grid Grid.Row="1" Margin="0,0,0,8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="sampleWeightTextboxMulti" Grid.Column="0" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="sampleWeightMulti_TextChanged" TextBlock.FontSize="24"/>
-                                <TextBox x:Name="resultWeightTextboxMulti" Grid.Column="2" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="resultWeightMulti_TextChanged" TextBlock.FontSize="24"/>
-                            </Grid>
-
-                            <!-- Testing Helper Pairs (Row 2) -->
-                            <Grid Grid.Row="2">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Header: Karat vs Ratti -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,2,0,2">
-                                    <Run Text="Karat / " FontWeight="Bold" />
-                                    <Run Text="کیریٹ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
-                                </TextBlock>
-                                <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,2,0,2">
-                                    <Run Text="Ratti / " FontWeight="Bold" />
-                                    <Run Text="رتی" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
-                                </TextBlock>
-
-                                <!-- Inputs: Karat vs Ratti -->
-                                <TextBox x:Name="karatInputTextboxMulti" Grid.Row="1" Grid.Column="0" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="karatInputMulti_TextChanged" TextBlock.FontSize="24"/>
-                                <TextBox x:Name="rattiConversionTextboxMulti" Grid.Row="1" Grid.Column="2" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="rattiConversionMulti_TextChanged" TextBlock.FontSize="24"/>
-
-                                <!-- Header: Purity % vs Ratti -->
-                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,4,0,2">
-                                    <Run Text="Purity % / " FontWeight="Bold" />
-                                    <Run Text="فیصد خالص" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
-                                </TextBlock>
-                                <TextBlock Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,4,0,2">
-                                    <Run Text="Ratti / " FontWeight="Bold" />
-                                    <Run Text="رتی" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="20" FontWeight="Bold" />
-                                </TextBlock>
-
-                                <!-- Inputs: Purity % vs Ratti -->
-                                <TextBox x:Name="purityPercentTextboxMulti" Grid.Row="3" Grid.Column="0" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="purityPercentMulti_TextChanged" TextBlock.FontSize="24"/>
-                                <TextBox x:Name="purityRattiResultTextboxMulti" Grid.Row="3" Grid.Column="2" Margin="0,2,0,4" HorizontalAlignment="Stretch" FontSize="20" FontWeight="Bold" Height="42" PreviewTextInput="labTextbox_PreviewTextInput" Text="0" GotFocus="clearOnFocus" TextChanged="purityRattiResultMulti_TextChanged" TextBlock.FontSize="24"/>
-                            </Grid>
-
-                            <!-- Notes Card with Live Sum & Average (Row 3) -->
-                            <Border Grid.Row="3" Margin="0,8,0,0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="10">
+                            <!-- Notes Card with Live Sum & Average (Row 1) -->
+                            <Border Grid.Row="1" Margin="0,10,0,0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="8" Padding="10">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" MinHeight="90" />
+                                        <RowDefinition Height="*" MinHeight="110" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <!-- Notes Header -->
-                                    <TextBlock Grid.Row="0" Margin="0,0,0,6" FontSize="22" FontWeight="Bold" Foreground="#334155">
-                                        <Run Text="Notes / " FontWeight="Bold" />
-                                        <Run Text="نوٹ (Lines for Sum &amp; Avg):" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" FontWeight="Bold" />
-                                    </TextBlock>
+                                    <!-- Notes Header with CheckBox -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="22" FontWeight="Bold" Foreground="#334155">
+                                            <Run Text="Notes / " FontWeight="Bold" />
+                                            <Run Text="نوٹ:" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="26" FontWeight="Bold" />
+                                        </TextBlock>
+                                        <CheckBox x:Name="doPrintNotesMulti" Grid.Column="1" IsChecked="False" VerticalAlignment="Center" Click="PrintCheckBox_Click" IsTabStop="False" ToolTip="Print Notes on Receipt" />
+                                    </Grid>
 
-                                    <!-- Multiline Notes TextBox -->
+                                    <!-- Multiline Notes TextBox: aligned top-left -->
                                     <TextBox x:Name="notesTextboxMulti" Grid.Row="1" FontSize="20" FontWeight="Bold"
                                              AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                              Padding="8" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1"
+                                             VerticalContentAlignment="Top" HorizontalContentAlignment="Left" TextAlignment="Left"
                                              TextChanged="notesTextboxMulti_TextChanged"
                                              TextBlock.FontSize="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 
-                                    <!-- Live Status Bar: Sum & Average -->
-                                    <Border Grid.Row="2" Background="#F1F5F9" CornerRadius="6" Padding="10,6" Margin="0,8,0,0" BorderBrush="#CBD5E1" BorderThickness="1">
+                                    <!-- Live Status Bar: Sum on left, Avg on right -->
+                                    <Border Grid.Row="2" Background="#F1F5F9" CornerRadius="6" Padding="12,6" Margin="0,8,0,0" BorderBrush="#CBD5E1" BorderThickness="1">
                                         <Grid>
-                                            <TextBlock Text="Live Calculation / لائیو حساب:" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Left" />
-                                            <TextBlock x:Name="notesAvgSumTextMulti" Text="Lines: 0 | Sum: 0.00 | Avg: 0.00" HorizontalAlignment="Right" FontSize="18" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="notesSumTextMulti" Text="Sum: 0.00" HorizontalAlignment="Left" FontSize="18" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="notesAvgTextMulti" Text="Avg: 0.00" HorizontalAlignment="Right" FontSize="18" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
                                         </Grid>
                                     </Border>
                                 </Grid>
@@ -783,7 +785,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Table Header Title -->
-                            <TextBlock Grid.Row="0" Text="Tested Products in Batch / بیچ میں شامل آئٹمز:" FontSize="22" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="0" Text="Tested Products in Batch:" FontSize="22" FontWeight="Bold" Foreground="#1E3A8A" Margin="0,0,0,8" />
 
                             <!-- Batch DataGrid -->
                             <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8">
@@ -802,7 +804,9 @@
                                           Background="#FFFFFF"
                                           AlternatingRowBackground="#F8FAFC"
                                           BorderThickness="0"
-                                          MaxHeight="260">
+                                          Height="170"
+                                          MaxHeight="170"
+                                          VerticalScrollBarVisibility="Auto">
                                     <DataGrid.ColumnHeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
                                             <Setter Property="Background" Value="#F1F5F9" />
@@ -1014,7 +1018,7 @@
             </TabItem>
 
             <!-- History Tab -->
-            <TabItem Header="History" x:Name="historyTab" FontSize="38" FontWeight="Bold" Width="140" Background="#BAE6FD">
+            <TabItem Header="History" x:Name="historyTab" FontSize="38" FontWeight="Bold" Width="Auto" MinWidth="200" Padding="18,4" Background="#BAE6FD">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -1316,7 +1320,7 @@
             </TabItem>
 
             <!-- Settings Tab -->
-            <TabItem Header="Settings" x:Name="settingsTab" FontSize="38" FontWeight="Bold" Width="170" Background="#E0E7FF">
+            <TabItem Header="Settings" x:Name="settingsTab" FontSize="38" FontWeight="Bold" Width="Auto" MinWidth="220" Padding="18,4" Background="#E0E7FF">
                 <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid Margin="16" MaxWidth="800" HorizontalAlignment="Center">
                         <StackPanel Orientation="Vertical">

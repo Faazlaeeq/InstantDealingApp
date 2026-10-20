@@ -799,17 +799,8 @@ namespace InstantDealingApp
                     e.Handled = true;
                     return;
                 }
-                if (focusedElement == sampleWeightTextboxMulti)
-                {
-                    resultWeightTextboxMulti.Focus();
-                    e.Handled = true;
-                    return;
-                }
-                if (focusedElement == resultWeightTextboxMulti ||
-                    focusedElement == karatInputTextboxMulti ||
-                    focusedElement == rattiConversionTextboxMulti ||
-                    focusedElement == purityPercentTextboxMulti ||
-                    focusedElement == purityRattiResultTextboxMulti)
+                if (focusedElement == karatInputTextboxMulti ||
+                    focusedElement == purityPercentTextboxMulti)
                 {
                     weightInputTextboxMulti.Focus();
                     e.Handled = true;
@@ -1256,8 +1247,14 @@ namespace InstantDealingApp
                 ? "this transaction"
                 : record.CustomerName;
 
+            bool isMulti = record.TabType == "Multi Test" || 
+                           (record.BatchItems != null && record.BatchItems.Count > 0) || 
+                           (record.ItemType != null && record.ItemType.StartsWith("Batch"));
+            string tabName = isMulti ? "Multi Test" : "Test";
+            string tabNameUrdu = isMulti ? "ملٹی ٹیسٹ" : "ٹیسٹ";
+
             MessageBoxResult res = MessageBox.Show(
-                $"Do you want to open the record for '{customer}' in the Test tab?\n\nThis will load all details into the Test tab so you can edit and reprint.\n\nکیا آپ یہ ریکارڈ ٹیسٹ ٹیب میں کھولنا چاہتے ہیں؟",
+                $"Do you want to open the record for '{customer}' in the {tabName} tab?\n\nThis will load all details into the {tabName} tab so you can edit and reprint.\n\nکیا آپ یہ ریکارڈ {tabNameUrdu} ٹیب میں کھولنا چاہتے ہیں؟",
                 "Open Record / ریکارڈ کھولیں",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question,
@@ -1265,11 +1262,22 @@ namespace InstantDealingApp
 
             if (res == MessageBoxResult.Yes)
             {
-                PopulateTestTabFromRecord(record);
-                updateTestCalculations();
-                if (mainTabControl != null && testTab != null)
+                if (isMulti)
                 {
-                    mainTabControl.SelectedItem = testTab;
+                    PopulateMultiTestTabFromRecord(record);
+                    if (mainTabControl != null && multiTestTab != null)
+                    {
+                        mainTabControl.SelectedItem = multiTestTab;
+                    }
+                }
+                else
+                {
+                    PopulateTestTabFromRecord(record);
+                    updateTestCalculations();
+                    if (mainTabControl != null && testTab != null)
+                    {
+                        mainTabControl.SelectedItem = testTab;
+                    }
                 }
             }
         }
@@ -1448,9 +1456,11 @@ namespace InstantDealingApp
 
                 if (notesTextboxTest != null)
                 {
-                    notesTextboxTest.Text = record.Notes == "-" ? "" : (record.Notes ?? "");
-                    if (doPrintNotes != null)
-                        doPrintNotes.IsChecked = !string.IsNullOrWhiteSpace(notesTextboxTest.Text);
+                    notesTextboxTest.Text = "";
+                }
+                if (doPrintNotes != null)
+                {
+                    doPrintNotes.IsChecked = false;
                 }
 
                 if (totalPureGoldCashTextbox != null)
@@ -1459,6 +1469,84 @@ namespace InstantDealingApp
                     if (doPrintTotalPureGoldCash != null)
                         doPrintTotalPureGoldCash.IsChecked = record.Cash > 0;
                 }
+            }
+            catch { }
+        }
+
+        private void PopulateMultiTestTabFromRecord(PrintRecord record)
+        {
+            if (record == null) return;
+            try
+            {
+                BatchItems.Clear();
+
+                if (record.BatchItems != null && record.BatchItems.Count > 0)
+                {
+                    for (int i = 0; i < record.BatchItems.Count; i++)
+                    {
+                        var it = record.BatchItems[i];
+                        it.Index = i + 1;
+                        BatchItems.Add(it);
+                    }
+                }
+                else if (record.TotalWeight > 0 || record.Cash > 0)
+                {
+                    // Fallback for legacy records saved without individual items
+                    BatchItems.Add(new BatchItem
+                    {
+                        Index = 1,
+                        Metal = record.Metal ?? "Gold",
+                        ItemType = record.ItemType ?? "Item",
+                        Weight = record.Weight > 0 ? record.Weight : record.TotalWeight,
+                        Taka = record.Taka,
+                        TotalWeight = record.TotalWeight,
+                        Ratti = record.Ratti,
+                        Karat = record.Karat,
+                        PurityPercent = record.PurityPercent,
+                        PureGold = record.PureGold,
+                        Labor = record.Labor,
+                        Cash = record.Cash
+                    });
+                }
+
+                if (customersMulti != null)
+                {
+                    customersMulti.Text = record.CustomerName == "-" ? "" : (record.CustomerName ?? "");
+                    if (doPrintCustomerNameMulti != null)
+                        doPrintCustomerNameMulti.IsChecked = !string.IsNullOrWhiteSpace(customersMulti.Text);
+                }
+
+                if (goldRateTextboxMulti != null)
+                {
+                    goldRateTextboxMulti.Text = record.GoldRate > 0 ? record.GoldRate.ToString("N0") : "0";
+                    _rawBaseGoldRateMulti = record.GoldRate;
+                    if (doPrintGoldRateMulti != null)
+                        doPrintGoldRateMulti.IsChecked = record.GoldRate > 0;
+                }
+
+                if (notesTextboxMulti != null)
+                {
+                    notesTextboxMulti.Text = "";
+                }
+                if (doPrintNotesMulti != null)
+                {
+                    doPrintNotesMulti.IsChecked = false;
+                }
+
+                // Reset individual item input boxes on Multi Test tab
+                if (weightInputTextboxMulti != null) weightInputTextboxMulti.Text = "0";
+                if (takaTextboxMulti != null) takaTextboxMulti.Text = "0";
+                if (totalWeightTextboxMulti != null) totalWeightTextboxMulti.Text = "0";
+                if (resultTextboxMulti != null) resultTextboxMulti.Text = "0";
+                if (pureGoldTextboxMulti != null) pureGoldTextboxMulti.Text = "0";
+                if (laborTextboxMulti != null) laborTextboxMulti.Text = "0";
+                if (grossPureGoldCashTextboxMulti != null) grossPureGoldCashTextboxMulti.Text = "0";
+                if (totalPureGoldCashTextboxMulti != null) totalPureGoldCashTextboxMulti.Text = "0";
+                if (karatInputTextboxMulti != null) karatInputTextboxMulti.Text = "0";
+                if (purityPercentTextboxMulti != null) purityPercentTextboxMulti.Text = "0";
+
+                updateBatchTotals();
+                batchDataGrid?.Items.Refresh();
             }
             catch { }
         }
@@ -1780,11 +1868,6 @@ namespace InstantDealingApp
 
         private void notesTextboxTest_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (notesTextboxTest != null && notesTextboxTest.IsFocused && doPrintNotes != null)
-            {
-                doPrintNotes.IsChecked = true;
-            }
-
             if (notesTextboxTest == null || string.IsNullOrWhiteSpace(notesTextboxTest.Text)) return;
 
             ExtractAndApplyGoldRateFromNotes(notesTextboxTest.Text);
@@ -2423,56 +2506,6 @@ namespace InstantDealingApp
             updateMultiTestCalculations();
         }
 
-        private void sampleWeightMulti_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isCalculatingRattiMulti) return;
-            if (sender is TextBox tb) FormatAsZeroDecimal(tb);
-
-            _isCalculatingRattiMulti = true;
-            try
-            {
-                double sample = NumberFormattingHelper.GetCleanDouble(sampleWeightTextboxMulti);
-                double resWeight = NumberFormattingHelper.GetCleanDouble(resultWeightTextboxMulti);
-                if (sample > 0)
-                {
-                    double ratti = ((sample - resWeight) / sample) * 96.0;
-                    if (ratti < 0) ratti = 0;
-                    SyncAllPurityFieldsMulti(ratti, sampleWeightTextboxMulti);
-                }
-            }
-            catch { }
-            finally
-            {
-                _isCalculatingRattiMulti = false;
-            }
-            updateMultiTestCalculations();
-        }
-
-        private void resultWeightMulti_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isCalculatingRattiMulti) return;
-            if (sender is TextBox tb) FormatAsZeroDecimal(tb);
-
-            _isCalculatingRattiMulti = true;
-            try
-            {
-                double sample = NumberFormattingHelper.GetCleanDouble(sampleWeightTextboxMulti);
-                double resWeight = NumberFormattingHelper.GetCleanDouble(resultWeightTextboxMulti);
-                if (sample > 0)
-                {
-                    double ratti = ((sample - resWeight) / sample) * 96.0;
-                    if (ratti < 0) ratti = 0;
-                    SyncAllPurityFieldsMulti(ratti, resultWeightTextboxMulti);
-                }
-            }
-            catch { }
-            finally
-            {
-                _isCalculatingRattiMulti = false;
-            }
-            updateMultiTestCalculations();
-        }
-
         private void karatInputMulti_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isSyncingPurityMulti) return;
@@ -2487,17 +2520,6 @@ namespace InstantDealingApp
             updateMultiTestCalculations();
         }
 
-        private void rattiConversionMulti_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isSyncingPurityMulti) return;
-            if (rattiConversionTextboxMulti != null && rattiConversionTextboxMulti.IsFocused)
-            {
-                double ratti = NumberFormattingHelper.GetCleanDouble(rattiConversionTextboxMulti);
-                SyncAllPurityFieldsMulti(ratti, rattiConversionTextboxMulti);
-            }
-            updateMultiTestCalculations();
-        }
-
         private void purityPercentMulti_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isSyncingPurityMulti) return;
@@ -2508,17 +2530,6 @@ namespace InstantDealingApp
                 if (pct < 0) pct = 0;
                 double ratti = Math.Max(0, 96.0 - (pct * 0.96));
                 SyncAllPurityFieldsMulti(ratti, purityPercentTextboxMulti);
-            }
-            updateMultiTestCalculations();
-        }
-
-        private void purityRattiResultMulti_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isSyncingPurityMulti) return;
-            if (purityRattiResultTextboxMulti != null && purityRattiResultTextboxMulti.IsFocused)
-            {
-                double ratti = NumberFormattingHelper.GetCleanDouble(purityRattiResultTextboxMulti);
-                SyncAllPurityFieldsMulti(ratti, purityRattiResultTextboxMulti);
             }
             updateMultiTestCalculations();
         }
@@ -2543,12 +2554,6 @@ namespace InstantDealingApp
                 if (source != resultTextboxMulti && resultTextboxMulti != null)
                     resultTextboxMulti.Text = rattiStr;
 
-                if (source != rattiConversionTextboxMulti && rattiConversionTextboxMulti != null)
-                    rattiConversionTextboxMulti.Text = rattiStr;
-
-                if (source != purityRattiResultTextboxMulti && purityRattiResultTextboxMulti != null)
-                    purityRattiResultTextboxMulti.Text = rattiStr;
-
                 if (source != karatInputTextboxMulti && karatInputTextboxMulti != null)
                     karatInputTextboxMulti.Text = karatStr;
 
@@ -2563,12 +2568,13 @@ namespace InstantDealingApp
 
         private void notesTextboxMulti_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (notesAvgSumTextMulti == null || notesTextboxMulti == null) return;
+            if (notesTextboxMulti == null) return;
 
             string text = notesTextboxMulti.Text;
             if (string.IsNullOrWhiteSpace(text))
             {
-                notesAvgSumTextMulti.Text = "Lines: 0 | Sum: 0.00 | Avg: 0.00";
+                if (notesSumTextMulti != null) notesSumTextMulti.Text = "Sum: 0.00";
+                if (notesAvgTextMulti != null) notesAvgTextMulti.Text = "Avg: 0.00";
                 return;
             }
 
@@ -2596,7 +2602,8 @@ namespace InstantDealingApp
             }
 
             double avg = count > 0 ? (sum / count) : 0;
-            notesAvgSumTextMulti.Text = $"Lines: {count} | Sum: {sum:N2} | Avg: {avg:N2}";
+            if (notesSumTextMulti != null) notesSumTextMulti.Text = $"Sum: {sum:N2}";
+            if (notesAvgTextMulti != null) notesAvgTextMulti.Text = $"Avg: {avg:N2}";
         }
 
         private void updateMultiTestCalculations()
@@ -2641,29 +2648,6 @@ namespace InstantDealingApp
                     }
                 }
 
-                if (!_isCalculatingRattiMulti && sampleWeightTextboxMulti != null && resultWeightTextboxMulti != null && !resultWeightTextboxMulti.IsFocused)
-                {
-                    double sample = NumberFormattingHelper.GetCleanDouble(sampleWeightTextboxMulti);
-                    if (sample > 0)
-                    {
-                        double resWeight = sample * ((96.0 - resultRatti) / 96.0);
-                        if (resWeight < 0) resWeight = 0;
-                        _isCalculatingRattiMulti = true;
-                        try
-                        {
-                            string formattedRes = resWeight.ToString("F4").TrimEnd('0').TrimEnd('.');
-                            if (string.IsNullOrEmpty(formattedRes)) formattedRes = "0";
-                            if (formattedRes.StartsWith(".")) formattedRes = "0" + formattedRes;
-                            else if (!formattedRes.StartsWith("0.") && resWeight > 0 && resWeight < 1) formattedRes = "0." + formattedRes;
-
-                            resultWeightTextboxMulti.Text = formattedRes;
-                        }
-                        finally
-                        {
-                            _isCalculatingRattiMulti = false;
-                        }
-                    }
-                }
 
                 // 1. Pure Gold:
                 double pureRatti = Math.Max(0, 96.0 - resultRatti);
@@ -2780,12 +2764,8 @@ namespace InstantDealingApp
             if (grossPureGoldCashTextboxMulti != null) grossPureGoldCashTextboxMulti.Text = "0";
             if (totalPureGoldCashTextboxMulti != null) totalPureGoldCashTextboxMulti.Text = "0";
 
-            if (sampleWeightTextboxMulti != null) sampleWeightTextboxMulti.Text = "0";
-            if (resultWeightTextboxMulti != null) resultWeightTextboxMulti.Text = "0";
             if (karatInputTextboxMulti != null) karatInputTextboxMulti.Text = "0";
-            if (rattiConversionTextboxMulti != null) rattiConversionTextboxMulti.Text = "0";
             if (purityPercentTextboxMulti != null) purityPercentTextboxMulti.Text = "0";
-            if (purityRattiResultTextboxMulti != null) purityRattiResultTextboxMulti.Text = "0";
 
             _isLaborManuallyEditedMulti = false;
             updateMultiTestCalculations();
@@ -2853,14 +2833,11 @@ namespace InstantDealingApp
             if (totalPureGoldCashTextboxMulti != null) totalPureGoldCashTextboxMulti.Text = "0";
 
             if (notesTextboxMulti != null) notesTextboxMulti.Text = "";
-            if (notesAvgSumTextMulti != null) notesAvgSumTextMulti.Text = "Lines: 0 | Sum: 0.00 | Avg: 0.00";
+            if (notesSumTextMulti != null) notesSumTextMulti.Text = "Sum: 0.00";
+            if (notesAvgTextMulti != null) notesAvgTextMulti.Text = "Avg: 0.00";
 
-            if (sampleWeightTextboxMulti != null) sampleWeightTextboxMulti.Text = "0";
-            if (resultWeightTextboxMulti != null) resultWeightTextboxMulti.Text = "0";
             if (karatInputTextboxMulti != null) karatInputTextboxMulti.Text = "0";
-            if (rattiConversionTextboxMulti != null) rattiConversionTextboxMulti.Text = "0";
             if (purityPercentTextboxMulti != null) purityPercentTextboxMulti.Text = "0";
-            if (purityRattiResultTextboxMulti != null) purityRattiResultTextboxMulti.Text = "0";
 
             _isLaborManuallyEditedMulti = false;
 
@@ -2961,6 +2938,7 @@ namespace InstantDealingApp
                     Cash = sumCash,
                     GoldRate = goldRate,
                     Notes = notes,
+                    BatchItems = BatchItems.ToList(),
                     ReceiptXaml = System.Windows.Markup.XamlWriter.Save(doc)
                 };
 
@@ -3028,6 +3006,23 @@ namespace InstantDealingApp
 
         private void SetAllCheckBoxesState(bool isChecked)
         {
+            if (mainTabControl.SelectedItem == multiTestTab)
+            {
+                if (doPrintGoldRateMulti != null) doPrintGoldRateMulti.IsChecked = isChecked;
+                if (doPrintCustomerNameMulti != null) doPrintCustomerNameMulti.IsChecked = isChecked;
+                if (doPrintWeightMulti != null) doPrintWeightMulti.IsChecked = isChecked;
+                if (doPrintTotalWeightMulti != null) doPrintTotalWeightMulti.IsChecked = isChecked;
+                if (doPrintResultMulti != null) doPrintResultMulti.IsChecked = isChecked;
+                if (doPrintPureGoldMulti != null) doPrintPureGoldMulti.IsChecked = isChecked;
+                if (doPrintLaborMulti != null) doPrintLaborMulti.IsChecked = isChecked;
+                if (doPrintGrossPureGoldCashMulti != null) doPrintGrossPureGoldCashMulti.IsChecked = isChecked;
+                if (doPrintTotalPureGoldCashMulti != null) doPrintTotalPureGoldCashMulti.IsChecked = isChecked;
+                if (doPrintKaratMulti != null) doPrintKaratMulti.IsChecked = isChecked;
+                if (doPrintPurityPercentMulti != null) doPrintPurityPercentMulti.IsChecked = isChecked;
+                if (doPrintNotesMulti != null) doPrintNotesMulti.IsChecked = isChecked;
+                return;
+            }
+
             // Test Tab CheckBoxes
             if (doPrintWeight != null) doPrintWeight.IsChecked = isChecked;
             if (doPrintTaka != null) doPrintTaka.IsChecked = isChecked;
@@ -3195,7 +3190,7 @@ namespace InstantDealingApp
                     testRowGroup.Rows.Add(row);
                 }
 
-                if (doPrint(takaTextbox) && !string.IsNullOrWhiteSpace(takaTextbox?.Text) && takaTextbox.Text != "0")
+                if (doPrint(takaTextbox) && NumberFormattingHelper.GetCleanDouble(takaTextbox) > 0)
                 {
                     TableRow row = new TableRow();
                     row.Cells.Add(new TableCell(new Paragraph(new Run("Taka:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
@@ -3389,7 +3384,7 @@ namespace InstantDealingApp
             else if (customersTest != null && !string.IsNullOrWhiteSpace(customersTest.Text))
                 customerName = customersTest.Text;
 
-            if (!string.IsNullOrWhiteSpace(customerName))
+            if (doPrintCustomerNameMulti?.IsChecked == true && !string.IsNullOrWhiteSpace(customerName))
             {
                 Paragraph customerParagraph = new Paragraph();
                 customerParagraph.Inlines.Add(new Run("Customer: ") { FontWeight = FontWeights.Bold });
@@ -3552,8 +3547,8 @@ namespace InstantDealingApp
             summaryTable.RowGroups.Add(summaryGroup);
             flowDoc.Blocks.Add(summaryTable);
 
-            // Gold Rate (if entered)
-            if (goldRateTextboxMulti != null && !string.IsNullOrWhiteSpace(goldRateTextboxMulti.Text) && goldRateTextboxMulti.Text != "0")
+            // Gold Rate (if entered and checked)
+            if (doPrintGoldRateMulti?.IsChecked == true && goldRateTextboxMulti != null && !string.IsNullOrWhiteSpace(goldRateTextboxMulti.Text) && goldRateTextboxMulti.Text != "0")
             {
                 flowDoc.Blocks.Add(CreateSeparator());
                 string rateStr = goldRateTextboxMulti.Text;
@@ -3584,8 +3579,8 @@ namespace InstantDealingApp
                 flowDoc.Blocks.Add(ratePara);
             }
 
-            // Notes Section
-            if (notesTextboxMulti != null && !string.IsNullOrWhiteSpace(notesTextboxMulti.Text))
+            // Notes Section (if entered and checked)
+            if (doPrintNotesMulti?.IsChecked == true && notesTextboxMulti != null && !string.IsNullOrWhiteSpace(notesTextboxMulti.Text))
             {
                 flowDoc.Blocks.Add(CreateSeparator());
                 Paragraph notesHeader = new Paragraph(new Bold(new Run("NOTES / نوٹ:")))
@@ -3603,9 +3598,11 @@ namespace InstantDealingApp
                 };
                 flowDoc.Blocks.Add(notesBody);
 
-                if (notesAvgSumTextMulti != null && !string.IsNullOrWhiteSpace(notesAvgSumTextMulti.Text) && notesAvgSumTextMulti.Text != "Lines: 0 | Sum: 0.00 | Avg: 0.00")
+                string sumStr = notesSumTextMulti?.Text ?? "";
+                string avgStr = notesAvgTextMulti?.Text ?? "";
+                if (!string.IsNullOrWhiteSpace(sumStr) || !string.IsNullOrWhiteSpace(avgStr))
                 {
-                    Paragraph avgSumPara = new Paragraph(new Bold(new Run(notesAvgSumTextMulti.Text)))
+                    Paragraph avgSumPara = new Paragraph(new Bold(new Run($"{sumStr}   |   {avgStr}")))
                     {
                         FontSize = IsSmallSlipSelected ? 9 : 11,
                         Margin = new Thickness(0, 2, 0, 2),
@@ -3864,6 +3861,7 @@ namespace InstantDealingApp
         public double GoldRate { get; set; }
         public string Status { get; set; } = "";
         public string Notes { get; set; } = "";
+        public List<BatchItem> BatchItems { get; set; } = new List<BatchItem>();
         public string ReceiptXaml { get; set; } = "";
     }
 

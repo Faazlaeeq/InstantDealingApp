@@ -22,7 +22,7 @@ namespace InstantDealingApp
 
     public static class UpdateService
     {
-        public const string CurrentVersion = "1.0.1";
+        public const string CurrentVersion = "1.0.4";
 
         public static async Task<UpdateManifest?> CheckForUpdatesAsync(string repoOwner, string repoName, string branch)
         {
@@ -123,22 +123,29 @@ namespace InstantDealingApp
 
             try
             {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("User-Agent", "InstantDealingApp-Updater");
+                var handler = new HttpClientHandler
+                {
+                    AllowAutoRedirect = true,
+                    MaxAutomaticRedirections = 10
+                };
+                using var client = new HttpClient(handler);
+                client.Timeout = TimeSpan.FromMinutes(10);
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) InstantDealingApp-Updater");
 
                 using var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
                 long? totalBytes = response.Content.Headers.ContentLength;
                 string tempDir = Path.GetTempPath();
-                string ext = Path.GetExtension(downloadUrl);
+                string cleanUrl = downloadUrl.Split('?')[0];
+                string ext = Path.GetExtension(cleanUrl);
                 if (string.IsNullOrEmpty(ext)) ext = ".exe";
                 string tempFile = Path.Combine(tempDir, $"InstantDealingSetup_Update_{Guid.NewGuid():N}{ext}");
 
                 using (var contentStream = await response.Content.ReadAsStreamAsync())
-                using (var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                using (var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 16384, true))
                 {
-                    byte[] buffer = new byte[8192];
+                    byte[] buffer = new byte[16384];
                     long totalRead = 0;
                     int bytesRead;
 
@@ -152,6 +159,13 @@ namespace InstantDealingApp
                             onProgress?.Invoke(progress);
                         }
                     }
+                }
+
+                // Verify file size is realistic (> 5MB) to avoid executing corrupt downloads or error HTML pages
+                FileInfo fi = new FileInfo(tempFile);
+                if (fi.Length < 5 * 1024 * 1024)
+                {
+                    throw new Exception($"Downloaded file is too small ({fi.Length} bytes). Download may have been blocked or redirected.");
                 }
 
                 // If downloaded a zip, extract the exe

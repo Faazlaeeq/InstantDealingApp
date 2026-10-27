@@ -1,5 +1,5 @@
 {
-  "version": "1.0.3",
-  "downloadUrl": "https://tmpfiles.org/dl/wOAkLVXhFg6T/instantdealingapp_setup.zip",
-  "releaseNotes": "Batch print now includes average of ratti, actual gross weight, total taka, and total net weight separately in the summary section."
+  "version": "1.0.4",
+  "downloadUrl": "https://raw.githubusercontent.com/FaazLaeeq/InstantDealingApp/xrf-multi-test/InstantDealingApp_Setup.exe",
+  "releaseNotes": "Separate Print Paid & Unpaid buttons, This Day filter, detailed Batch Summary with avg ratti, actual weight, and total taka."
 }

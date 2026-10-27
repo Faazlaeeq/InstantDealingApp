@@ -3213,13 +3213,18 @@ namespace InstantDealingApp
 
         private void updateBatchTotals()
         {
+            double totalGross = BatchItems.Sum(b => b.Weight);
+            double totalTaka = BatchItems.Sum(b => b.Taka);
             double totalWeight = BatchItems.Sum(b => b.TotalWeight);
             double totalPure = BatchItems.Sum(b => b.PureGold);
             double totalLabor = BatchItems.Sum(b => b.Labor);
             double totalCash = BatchItems.Sum(b => b.Cash);
 
             if (batchTotalWeightDisplay != null)
+            {
                 batchTotalWeightDisplay.Text = $"{totalWeight:0.000}g";
+                batchTotalWeightDisplay.ToolTip = $"Actual Weight: {totalGross:0.000}g | Total Taka: {totalTaka:0.000}g | Net Weight: {totalWeight:0.000}g";
+            }
             if (batchTotalPureGoldDisplay != null)
                 batchTotalPureGoldDisplay.Text = $"{totalPure:0.000}g";
             if (batchTotalLaborDisplay != null)
@@ -3990,33 +3995,63 @@ namespace InstantDealingApp
             };
             flowDoc.Blocks.Add(summaryTitle);
 
+            double actualWeightSum = items.Sum(b => b.Weight);
+            double totalTakaSum = items.Sum(b => b.Taka);
             double totalWeightSum = items.Sum(b => b.TotalWeight);
             double totalPureSum = items.Sum(b => b.PureGold);
             double totalLaborSum = items.Sum(b => b.Labor);
             double totalCashSum = items.Sum(b => b.Cash);
 
+            var itemsWithRatti = items.Where(b => b.Ratti > 0 || (b.Karat > 0 && b.Karat < 24)).ToList();
+            double avgRatti = 0;
+            if (itemsWithRatti.Count > 0)
+            {
+                avgRatti = itemsWithRatti.Average(b => b.Ratti > 0 ? b.Ratti : Math.Max(0, (24.0 - b.Karat) * 4.0));
+            }
+
             Table summaryTable = new Table() { CellSpacing = 0 };
-            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 82 : 154) });
-            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 100 : 110) });
+            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 90 : 154) });
+            summaryTable.Columns.Add(new TableColumn() { Width = new GridLength(IsSmallSlipSelected ? 92 : 110) });
 
             TableRowGroup summaryGroup = new TableRowGroup();
             int summaryFontSize = IsSmallSlipSelected ? 12 : 14;
 
             // Total Items
             TableRow itemsRow = new TableRow() { FontSize = summaryFontSize };
-            itemsRow.Cells.Add(new TableCell(new Paragraph(new Run("Total Items:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            itemsRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Total Items:" : "Total Items / کل آئٹمز:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             itemsRow.Cells.Add(new TableCell(new Paragraph(new Run(items.Count.ToString())) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(itemsRow);
 
-            // Total Weight
+            // Actual Weight (Gross Weight)
+            TableRow actWtRow = new TableRow() { FontSize = summaryFontSize };
+            actWtRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Actual Weight:" : "Actual Weight / اصل وزن:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            actWtRow.Cells.Add(new TableCell(new Paragraph(new Run($"{actualWeightSum:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+            summaryGroup.Rows.Add(actWtRow);
+
+            // Total Taka
+            TableRow takaRow = new TableRow() { FontSize = summaryFontSize };
+            takaRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Total Taka:" : "Total Taka / کل ٹانکا:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            takaRow.Cells.Add(new TableCell(new Paragraph(new Run($"{totalTakaSum:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+            summaryGroup.Rows.Add(takaRow);
+
+            // Total Weight (Net Weight)
             TableRow wtRow = new TableRow() { FontSize = summaryFontSize };
-            wtRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Net Weight:" : "Total Net Weight:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            wtRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Total Weight:" : "Total Weight / کل وزن:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             wtRow.Cells.Add(new TableCell(new Paragraph(new Run($"{totalWeightSum:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(wtRow);
 
+            // Average Ratti
+            if (avgRatti > 0)
+            {
+                TableRow rattiRow = new TableRow() { FontSize = summaryFontSize };
+                rattiRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Avg Ratti:" : "Avg Ratti / اوسط رتی:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                rattiRow.Cells.Add(new TableCell(new Paragraph(new Run($"{avgRatti:0.##}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
+                summaryGroup.Rows.Add(rattiRow);
+            }
+
             // Total Pure Gold
             TableRow pureRow = new TableRow() { FontSize = summaryFontSize };
-            pureRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Pure Gold:" : "Total Pure Gold:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            pureRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Pure Gold:" : "Pure Gold / خالص سونا:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             pureRow.Cells.Add(new TableCell(new Paragraph(new Run($"{totalPureSum:0.000}g")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(pureRow);
 
@@ -4024,14 +4059,14 @@ namespace InstantDealingApp
             if (totalLaborSum > 0)
             {
                 TableRow laborRow = new TableRow() { FontSize = summaryFontSize };
-                laborRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Labor:" : "Total Labor:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+                laborRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "Labor:" : "Labor / کل مزدوری:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
                 laborRow.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalLaborSum:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
                 summaryGroup.Rows.Add(laborRow);
             }
 
             // TOTAL CASH
             TableRow cashRow = new TableRow() { FontSize = IsSmallSlipSelected ? 13 : 16 };
-            cashRow.Cells.Add(new TableCell(new Paragraph(new Run("TOTAL CASH:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
+            cashRow.Cells.Add(new TableCell(new Paragraph(new Run(IsSmallSlipSelected ? "TOTAL CASH:" : "TOTAL CASH / کل رقم:")) { Margin = new Thickness(0), FontWeight = FontWeights.Bold }));
             cashRow.Cells.Add(new TableCell(new Paragraph(new Run($"Rs. {totalCashSum:N0}")) { Margin = new Thickness(0), TextAlignment = TextAlignment.Right, FontWeight = FontWeights.Bold }));
             summaryGroup.Rows.Add(cashRow);
 

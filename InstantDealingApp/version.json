@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
-  "downloadUrl": "https://files.catbox.moe/cl6m3g.zip",
-  "releaseNotes": "Replaced paid checkbox with dedicated Print Paid and Print Unpaid buttons on both tabs. Changed history filter from This Month to This Day."
+  "version": "1.0.3",
+  "downloadUrl": "https://tmpfiles.org/dl/wOAkLVXhFg6T/instantdealingapp_setup.zip",
+  "releaseNotes": "Batch print now includes average of ratti, actual gross weight, total taka, and total net weight separately in the summary section."
 }

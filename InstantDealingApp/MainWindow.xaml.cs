@@ -92,6 +92,111 @@ namespace InstantDealingApp
             return new List<string>();
         }
 
+                private string GetItemsJsonPath()
+        {
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string userDir = System.IO.Path.Combine(localAppData, "InstantDealingApp");
+            if (!Directory.Exists(userDir)) Directory.CreateDirectory(userDir);
+            string userFilePath = System.IO.Path.Combine(userDir, "items.json");
+            if (!File.Exists(userFilePath))
+            {
+                string baseFilePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "items.json");
+                if (File.Exists(baseFilePath))
+                {
+                    try { File.Copy(baseFilePath, userFilePath, true); } catch { }
+                }
+                else
+                {
+                    try
+                    {
+                        File.WriteAllText(userFilePath, "{\"Items\":[\"Ring\",\"Chain\",\"Bangle\",\"Set\",\"Tops\",\"Chori\",\"Locket\",\"Earrings\",\"Coin\",\"Bar\",\"Pendant\",\"Bracelet\",\"Nose Pin\",\"Kara\",\"Other\"]}");
+                    }
+                    catch { }
+                }
+            }
+            return userFilePath;
+        }
+
+        private List<string> LoadItemNames()
+        {
+            try
+            {
+                string jsonPath = GetItemsJsonPath();
+                var jsonData = File.ReadAllText(jsonPath);
+                dynamic? jsonObject = JsonConvert.DeserializeObject(jsonData);
+                if (jsonObject?.Items != null)
+                {
+                    return jsonObject.Items.ToObject<List<string>>();
+                }
+            }
+            catch { }
+            return new List<string> { "Ring", "Chain", "Bangle", "Set", "Tops", "Chori", "Locket", "Earrings", "Coin", "Bar", "Pendant", "Bracelet", "Nose Pin", "Kara", "Other" };
+        }
+
+        private void SaveItemName(string newItem)
+        {
+            if (string.IsNullOrWhiteSpace(newItem) || newItem.StartsWith("--")) return;
+            string clean = newItem.Trim();
+            try
+            {
+                var items = LoadItemNames();
+                if (!items.Any(i => i.Equals(clean, StringComparison.OrdinalIgnoreCase)))
+                {
+                    items.Add(clean);
+                    string jsonPath = GetItemsJsonPath();
+                    var jsonObject = new { Items = items };
+                    File.WriteAllText(jsonPath, JsonConvert.SerializeObject(jsonObject, Formatting.Indented));
+                    PopulateItemDropdowns();
+                }
+            }
+            catch { }
+        }
+
+        private void PopulateItemDropdowns()
+        {
+            var items = LoadItemNames();
+            var listWithNone = new List<string> { "-- None / کوئی نہیں --" };
+            listWithNone.AddRange(items);
+
+            string? testSelected = itemTypeDropdownTest?.Text;
+            string? multiSelected = itemTypeDropdownMulti?.Text;
+
+            if (itemTypeDropdownTest != null)
+            {
+                itemTypeDropdownTest.ItemsSource = listWithNone;
+                if (!string.IsNullOrEmpty(testSelected)) itemTypeDropdownTest.Text = testSelected;
+                else itemTypeDropdownTest.SelectedIndex = 0;
+            }
+
+            if (itemTypeDropdownMulti != null)
+            {
+                itemTypeDropdownMulti.ItemsSource = listWithNone;
+                if (!string.IsNullOrEmpty(multiSelected)) itemTypeDropdownMulti.Text = multiSelected;
+                else itemTypeDropdownMulti.SelectedIndex = 0;
+            }
+        }
+
+        private void itemTypeDropdown_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is ComboBox cb && !string.IsNullOrWhiteSpace(cb.Text))
+            {
+                SaveItemName(cb.Text);
+            }
+        }
+
+        private void PopulateHistoryCustomerDropdown()
+        {
+            if (historyCustomerComboBox == null) return;
+            var names = LoadCustomerNames();
+            var list = new List<string> { "All Customers" };
+            list.AddRange(names);
+            historyCustomerComboBox.ItemsSource = list;
+            if (historyCustomerComboBox.SelectedIndex < 0)
+            {
+                historyCustomerComboBox.SelectedIndex = 0;
+            }
+        }
+
         private void cashTextbox_KeyDown(object sender, KeyEventArgs e)
         {
         }
@@ -100,6 +205,9 @@ namespace InstantDealingApp
             var names = LoadCustomerNames();
             if (customersTest != null) customersTest.ItemsSource = names;
             if (customersMulti != null) customersMulti.ItemsSource = names;
+            PopulateItemDropdowns();
+            PopulateHistoryCustomerDropdown();
+            LoadLedgerCustomers();
             if (batchDataGrid != null) batchDataGrid.ItemsSource = BatchItems;
             LoadPrintSettings();
             LoadAppSettings();
@@ -110,6 +218,7 @@ namespace InstantDealingApp
             updateMultiTestCalculations();
 
             CheckAndHandleScreenshotArgs();
+            if (!Environment.GetCommandLineArgs().Any(a => a == "--screenshot")) { CheckUpdatesSilentlyOnStartup(); }
         }
 
         private void CheckAndHandleScreenshotArgs()
@@ -127,6 +236,7 @@ namespace InstantDealingApp
                     string? batchReceiptOutPath = null;
                     string? smallBatchReceiptOutPath = null;
                     string? settingsOutPath = null;
+                    string? ledgerOutPath = null;
 
                     for (int j = 0; j < args.Length; j++)
                     {
@@ -137,6 +247,7 @@ namespace InstantDealingApp
                         if (args[j] == "--batch-receipt" && j + 1 < args.Length) batchReceiptOutPath = args[j + 1];
                         if (args[j] == "--small-batch-receipt" && j + 1 < args.Length) smallBatchReceiptOutPath = args[j + 1];
                         if (args[j] == "--settings" && j + 1 < args.Length) settingsOutPath = args[j + 1];
+                        if (args[j] == "--ledger" && j + 1 < args.Length) ledgerOutPath = args[j + 1];
                     }
                     if (string.IsNullOrEmpty(historyOutPath) && i + 2 < args.Length && !args[i + 2].StartsWith("--"))
                     {
@@ -151,14 +262,7 @@ namespace InstantDealingApp
                         if (radioGold != null) radioGold.IsChecked = true;
                         if (itemTypeDropdownTest != null)
                         {
-                            foreach (ComboBoxItem it in itemTypeDropdownTest.Items)
-                            {
-                                if (it.Tag?.ToString() == "Chori" || it.Content?.ToString()?.Contains("Chori") == true)
-                                {
-                                    itemTypeDropdownTest.SelectedItem = it;
-                                    break;
-                                }
-                            }
+                            itemTypeDropdownTest.Text = "Chori";
                         }
                         if (weightInputTextbox != null) weightInputTextbox.Text = "10.500";
                         if (takaTextbox != null) takaTextbox.Text = "0.500";
@@ -307,6 +411,23 @@ namespace InstantDealingApp
                             CaptureVisualToFile(this, settingsOutPath);
                         }
 
+                        if (!string.IsNullOrEmpty(ledgerOutPath) && ledgerTab != null)
+                        {
+                            LedgerService.RecordReportFee("Ahsan Bhai", DateTime.Now.AddDays(-2), "20261025-110000", "Gold Chori", 200.0);
+                            LedgerService.RecordReportFee("Ahsan Bhai", DateTime.Now.AddDays(-1), "20261026-153000", "Gold Chain", 200.0);
+                            LedgerService.RecordReportFee("Haji Munir & Sons", DateTime.Now.AddDays(-3), "20261024-094500", "Batch (3 items)", 200.0);
+
+                            mainTabControl.SelectedItem = ledgerTab;
+                            LoadLedgerCustomers();
+                            if (ledgerCustomerListBox != null && ledgerCustomerListBox.Items.Count > 0)
+                            {
+                                ledgerCustomerListBox.SelectedIndex = 0;
+                            }
+                            RefreshSelectedLedgerDetails();
+                            await System.Threading.Tasks.Task.Delay(1000);
+                            CaptureVisualToFile(this, ledgerOutPath);
+                        }
+
                         Application.Current.Shutdown();
                     });
                     break;
@@ -354,7 +475,10 @@ namespace InstantDealingApp
                     encoder.Save(fs);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                File.AppendAllText("error.txt", $"Error capturing {filePath}: " + ex.ToString() + "\n");
+            }
         }
 
         private void CaptureVisualToFile(Visual visual, string filePath)
@@ -376,7 +500,10 @@ namespace InstantDealingApp
                     encoder.Save(fs);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                File.AppendAllText("error.txt", $"Error capturing {filePath}: " + ex.ToString() + "\n");
+            }
         }
 
         private string GetPrintSettingsJsonPath()
@@ -869,6 +996,9 @@ namespace InstantDealingApp
         }
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (e.Source != mainTabControl) return;
+            try
+            {
             if (mainTabControl.SelectedItem == testTab)
             {
                 updateTestCalculations();
@@ -887,6 +1017,17 @@ namespace InstantDealingApp
                     saveButtonText.Inlines.Clear();
                     saveButtonText.Inlines.Add(new Run("Print Batch / ") { FontWeight = FontWeights.Bold });
                     saveButtonText.Inlines.Add(new Run("پرنٹ بیچ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
+                }
+            }
+            else if (mainTabControl.SelectedItem == ledgerTab)
+            {
+                LoadLedgerCustomers(ledgerCustomerSearchBox?.Text?.Trim());
+                RefreshSelectedLedgerDetails();
+                if (saveButtonText != null)
+                {
+                    saveButtonText.Inlines.Clear();
+                    saveButtonText.Inlines.Add(new Run("Ledger / ") { FontWeight = FontWeights.Bold });
+                    saveButtonText.Inlines.Add(new Run("کھاتہ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
                 }
             }
             else if (mainTabControl.SelectedItem == historyTab)
@@ -909,6 +1050,11 @@ namespace InstantDealingApp
                     saveButtonText.Inlines.Add(new Run("Save Settings / ") { FontWeight = FontWeights.Bold });
                     saveButtonText.Inlines.Add(new Run("ترتیبات محفوظ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
                 }
+            }
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllText("trace_condition.txt", "TAB_CHANGE_ERROR: " + ex.ToString() + "\n");
             }
         }
 
@@ -1042,7 +1188,15 @@ namespace InstantDealingApp
                     _allPrintRecords = LoadPrintHistory();
                 }
 
-                string searchCustomer = historySearchCustomer?.Text?.Trim().ToLower() ?? "";
+                string searchCustomer = "";
+                if (historyCustomerComboBox != null)
+                {
+                    string selected = historyCustomerComboBox.Text?.Trim() ?? "";
+                    if (!string.IsNullOrEmpty(selected) && !selected.Equals("All Customers", StringComparison.OrdinalIgnoreCase))
+                    {
+                        searchCustomer = selected.ToLower();
+                    }
+                }
                 DateTime? fromDate = historyFromDatePicker?.SelectedDate;
                 DateTime? toDate = historyToDatePicker?.SelectedDate;
 
@@ -1112,7 +1266,7 @@ namespace InstantDealingApp
 
         private void historyClearFilters_Click(object sender, RoutedEventArgs e)
         {
-            if (historySearchCustomer != null) historySearchCustomer.Text = "";
+            if (historyCustomerComboBox != null) historyCustomerComboBox.SelectedIndex = 0;
             if (historyFromDatePicker != null) historyFromDatePicker.SelectedDate = null;
             if (historyToDatePicker != null) historyToDatePicker.SelectedDate = null;
             ApplyHistoryFilters();
@@ -1489,18 +1643,14 @@ namespace InstantDealingApp
                 {
                     string target = record.ItemType;
                     if (string.Equals(target, "Necklace", StringComparison.OrdinalIgnoreCase)) target = "Set";
-                    bool matched = false;
-                    foreach (ComboBoxItem item in itemTypeDropdownTest.Items)
+                    if (!string.IsNullOrEmpty(target))
                     {
-                        if (string.Equals(item.Tag?.ToString(), target, StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(item.Content?.ToString(), target, StringComparison.OrdinalIgnoreCase))
-                        {
-                            itemTypeDropdownTest.SelectedItem = item;
-                            matched = true;
-                            break;
-                        }
+                        itemTypeDropdownTest.Text = target;
                     }
-                    if (!matched) itemTypeDropdownTest.SelectedIndex = 0;
+                    else
+                    {
+                        itemTypeDropdownTest.SelectedIndex = 0;
+                    }
                 }
 
                 if (weightInputTextbox != null)
@@ -2388,11 +2538,13 @@ namespace InstantDealingApp
 
         private string GetSelectedItemType()
         {
-            if (itemTypeDropdownTest?.SelectedItem is ComboBoxItem cbi)
+            if (itemTypeDropdownTest != null)
             {
-                string tag = cbi.Tag?.ToString() ?? "";
-                if (!string.IsNullOrEmpty(tag)) return tag;
-                string text = cbi.Content?.ToString() ?? "";
+                string text = itemTypeDropdownTest.Text?.Trim() ?? "";
+                if (string.IsNullOrEmpty(text) && itemTypeDropdownTest.SelectedItem != null)
+                {
+                    text = itemTypeDropdownTest.SelectedItem.ToString()?.Trim() ?? "";
+                }
                 if (text.Contains("None") || text.Contains("کوئی نہیں")) return "";
                 return text;
             }
@@ -2401,11 +2553,13 @@ namespace InstantDealingApp
 
         private string GetSelectedMultiItemType()
         {
-            if (itemTypeDropdownMulti?.SelectedItem is ComboBoxItem cbi)
+            if (itemTypeDropdownMulti != null)
             {
-                string tag = cbi.Tag?.ToString() ?? "";
-                if (!string.IsNullOrEmpty(tag)) return tag;
-                string text = cbi.Content?.ToString() ?? "";
+                string text = itemTypeDropdownMulti.Text?.Trim() ?? "";
+                if (string.IsNullOrEmpty(text) && itemTypeDropdownMulti.SelectedItem != null)
+                {
+                    text = itemTypeDropdownMulti.SelectedItem.ToString()?.Trim() ?? "";
+                }
                 if (text.Contains("None") || text.Contains("کوئی نہیں")) return "";
                 return text;
             }
@@ -4007,6 +4161,238 @@ namespace InstantDealingApp
                 textBox.Text = NumberFormattingHelper.GetCleanValue(textBox).ToString("N0");
             }
         }
+        #region Customer Ledger & Payments
+
+        private void LoadLedgerCustomers(string? search = null)
+        {
+            if (ledgerCustomerListBox == null) return;
+            var list = LedgerService.GetCustomersWithBalances(search);
+            ledgerCustomerListBox.ItemsSource = list;
+            if (list.Count > 0 && ledgerCustomerListBox.SelectedItem == null)
+            {
+                ledgerCustomerListBox.SelectedIndex = 0;
+            }
+        }
+
+        private void ledgerCustomerSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string search = ledgerCustomerSearchBox?.Text?.Trim() ?? "";
+            LoadLedgerCustomers(search);
+        }
+
+        private void ledgerRefreshBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LoadLedgerCustomers(ledgerCustomerSearchBox?.Text?.Trim());
+            RefreshSelectedLedgerDetails();
+        }
+
+        private void ledgerCustomerListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RefreshSelectedLedgerDetails();
+        }
+
+        private void RefreshSelectedLedgerDetails()
+        {
+            if (ledgerCustomerListBox?.SelectedItem is CustomerBalanceItem item)
+            {
+                if (ledgerSelectedCustomerText != null) ledgerSelectedCustomerText.Text = item.CustomerName;
+                if (ledgerRemainingCashText != null)
+                {
+                    ledgerRemainingCashText.Text = item.BalanceDisplay;
+                    ledgerRemainingCashText.Foreground = item.RemainingBalance > 0 
+                        ? (Brush)new BrushConverter().ConvertFromString("#DC2626")! 
+                        : (Brush)new BrushConverter().ConvertFromString("#16A34A")!;
+                }
+                if (ledgerLastPaidDateText != null) ledgerLastPaidDateText.Text = string.IsNullOrEmpty(item.LastPaymentDate) ? "-" : item.LastPaymentDate;
+
+                if (ledgerUnpaidDataGrid != null)
+                {
+                    ledgerUnpaidDataGrid.ItemsSource = LedgerService.GetUnpaidTransactions(item.CustomerName);
+                }
+
+                if (ledgerPaidDataGrid != null)
+                {
+                    ledgerPaidDataGrid.ItemsSource = LedgerService.GetPaymentRecords(item.CustomerName);
+                }
+
+                if (clearCustomerBalanceBtn != null)
+                {
+                    clearCustomerBalanceBtn.IsEnabled = item.RemainingBalance > 0;
+                }
+            }
+            else
+            {
+                if (ledgerSelectedCustomerText != null) ledgerSelectedCustomerText.Text = "Select a Customer / کسٹمر منتخب کریں";
+                if (ledgerRemainingCashText != null) ledgerRemainingCashText.Text = "Rs. 0";
+                if (ledgerLastPaidDateText != null) ledgerLastPaidDateText.Text = "-";
+                if (ledgerUnpaidDataGrid != null) ledgerUnpaidDataGrid.ItemsSource = null;
+                if (ledgerPaidDataGrid != null) ledgerPaidDataGrid.ItemsSource = null;
+                if (clearCustomerBalanceBtn != null) clearCustomerBalanceBtn.IsEnabled = false;
+            }
+        }
+
+        private void clearCustomerBalanceBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (ledgerCustomerListBox?.SelectedItem is CustomerBalanceItem item)
+            {
+                if (item.RemainingBalance <= 0)
+                {
+                    MessageBox.Show($"Customer {item.CustomerName} has no remaining balance to clear.", "Ledger", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var confirm = MessageBox.Show(
+                    $"Clear full remaining balance of {item.BalanceDisplay} for {item.CustomerName}?\n\nتمام بقایا رقم ادا شدہ تصور کی جائے گی۔",
+                    "Confirm Clear Balance",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (confirm == MessageBoxResult.Yes)
+                {
+                    double cleared = LedgerService.ClearCustomerBalance(item.CustomerName);
+                    MessageBox.Show(
+                        $"Rs. {cleared:N0} successfully cleared for {item.CustomerName}!\n\nرقم کامیابی سے کلیئر کر دی گئی۔",
+                        "Payment Recorded",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    LoadLedgerCustomers(ledgerCustomerSearchBox?.Text?.Trim());
+                    foreach (CustomerBalanceItem c in ledgerCustomerListBox.Items)
+                    {
+                        if (c.CustomerName.Equals(item.CustomerName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            ledgerCustomerListBox.SelectedItem = c;
+                            break;
+                        }
+                    }
+                    RefreshSelectedLedgerDetails();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Online Auto-Updates
+
+        private async void btnCheckUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            if (btnCheckUpdates != null) btnCheckUpdates.IsEnabled = false;
+            if (txtUpdateStatus != null)
+            {
+                txtUpdateStatus.Text = "Checking for updates...";
+                txtUpdateStatus.Foreground = (Brush)new BrushConverter().ConvertFromString("#0284C7")!;
+            }
+
+            string repo = txtUpdateRepo?.Text?.Trim() ?? "FaazLaeeq/InstantDealingApp";
+            string branch = txtUpdateBranch?.Text?.Trim() ?? "xrf-multi-test";
+
+            string repoOwner = "FaazLaeeq";
+            string repoName = "InstantDealingApp";
+            if (repo.Contains("/"))
+            {
+                var parts = repo.Split('/');
+                repoOwner = parts[0].Trim();
+                repoName = parts[1].Trim();
+            }
+
+            try
+            {
+                var update = await UpdateService.CheckForUpdatesAsync(repoOwner, repoName, branch);
+                if (update != null)
+                {
+                    if (txtUpdateStatus != null)
+                    {
+                        txtUpdateStatus.Text = $"Update Available: v{update.Version}";
+                        txtUpdateStatus.Foreground = (Brush)new BrushConverter().ConvertFromString("#16A34A")!;
+                    }
+
+                    var res = MessageBox.Show(
+                        $"A new version (v{update.Version}) is available!\n\nRelease Notes:\n{update.ReleaseNotes}\n\nWould you like to download and install this update now?",
+                        "Update Available",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        if (txtUpdateStatus != null) txtUpdateStatus.Text = "Downloading update...";
+                        bool success = await UpdateService.DownloadAndInstallUpdateAsync(update.DownloadUrl, p =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                if (txtUpdateStatus != null) txtUpdateStatus.Text = $"Downloading: {p}%";
+                            });
+                        });
+
+                        if (!success)
+                        {
+                            MessageBox.Show("Failed to download update. Please check internet connection or download manually.", "Update Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            if (txtUpdateStatus != null) txtUpdateStatus.Text = "Download failed.";
+                        }
+                    }
+                }
+                else
+                {
+                    if (txtUpdateStatus != null)
+                    {
+                        txtUpdateStatus.Text = $"You are on the latest version (v{UpdateService.CurrentVersion}).";
+                        txtUpdateStatus.Foreground = (Brush)new BrushConverter().ConvertFromString("#059669")!;
+                    }
+                    MessageBox.Show($"Instant Dealing is up to date (v{UpdateService.CurrentVersion}).", "Check for Updates", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (txtUpdateStatus != null)
+                {
+                    txtUpdateStatus.Text = "Error checking updates.";
+                    txtUpdateStatus.Foreground = (Brush)new BrushConverter().ConvertFromString("#DC2626")!;
+                }
+            }
+            finally
+            {
+                if (btnCheckUpdates != null) btnCheckUpdates.IsEnabled = true;
+            }
+        }
+
+        private async void CheckUpdatesSilentlyOnStartup()
+        {
+            if (chkAutoUpdateOnStartup?.IsChecked != true) return;
+
+            await System.Threading.Tasks.Task.Delay(6000);
+
+            string repo = txtUpdateRepo?.Text?.Trim() ?? "FaazLaeeq/InstantDealingApp";
+            string branch = txtUpdateBranch?.Text?.Trim() ?? "xrf-multi-test";
+            string repoOwner = "FaazLaeeq";
+            string repoName = "InstantDealingApp";
+            if (repo.Contains("/"))
+            {
+                var parts = repo.Split('/');
+                repoOwner = parts[0].Trim();
+                repoName = parts[1].Trim();
+            }
+
+            try
+            {
+                var update = await UpdateService.CheckForUpdatesAsync(repoOwner, repoName, branch);
+                if (update != null)
+                {
+                    var res = MessageBox.Show(
+                        $"A new software update (v{update.Version}) is available!\n\nRelease Notes:\n{update.ReleaseNotes}\n\nWould you like to install the update now?",
+                        "Software Update Available",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+
+                    if (res == MessageBoxResult.Yes)
+                    {
+                        await UpdateService.DownloadAndInstallUpdateAsync(update.DownloadUrl);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        #endregion
+
     }
 
     public class BatchItem : INotifyPropertyChanged
@@ -4154,5 +4540,8 @@ namespace InstantDealingApp
         public bool IsSmallSlip { get; set; } = false;
         public int FontSizeDelta { get; set; } = 0;
         public bool IsBoldEnabled { get; set; } = true;
+        public string UpdateRepo { get; set; } = "FaazLaeeq/InstantDealingApp";
+        public string UpdateBranch { get; set; } = "xrf-multi-test";
+        public bool AutoUpdateOnStartup { get; set; } = true;
     }
 }

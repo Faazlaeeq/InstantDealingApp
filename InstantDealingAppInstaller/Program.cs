@@ -127,6 +127,8 @@ namespace InstantDealingAppInstaller
                                 string fileName = entry.Name.ToLowerInvariant();
                                 bool isUserData = fileName == "print_history.json" ||
                                                   fileName == "customer.json" ||
+                                                  fileName == "items.json" ||
+                                                  fileName == "ledger.db" ||
                                                   fileName == "app_settings.json" ||
                                                   fileName == "print_settings.json";
 

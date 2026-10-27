@@ -1,0 +1,5 @@
+{
+  "version": "1.0.1",
+  "downloadUrl": "https://files.catbox.moe/t6dlvg.zip",
+  "releaseNotes": "Added Customer Ledger tab with SQLite database, 200 PKR report billing, customer dropdown filter in history, dynamic items.json list, and auto-updater."
+}

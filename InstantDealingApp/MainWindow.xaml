@@ -187,18 +187,20 @@
                                     </RadioButton>
                                 </StackPanel>
 
+                                <!-- Group 2.5: Report Fee Checkbox -->
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <CheckBox x:Name="chargeReportPaidCheckBox" IsChecked="True" VerticalAlignment="Center" Cursor="Hand">
+                                        <TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#0F172A">
+                                            <Run Text="Paid / " />
+                                            <Run Text="ادا شدہ (Rs. 200)" Foreground="#0369A1" />
+                                        </TextBlock>
+                                    </CheckBox>
+                                </StackPanel>
+
                                 <!-- Group 3: Item Type Dropdown -->
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                                     <TextBlock Text="Item / چیز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,10,0" />
-                                    <ComboBox x:Name="itemTypeDropdownTest" Width="180" Height="42" FontSize="18" FontWeight="Bold" SelectionChanged="itemTypeDropdown_SelectionChanged">
-                                        <ComboBoxItem Content="-- None / کوئی نہیں --" IsSelected="True" Tag="" />
-                                        <ComboBoxItem Content="Set" Tag="Set" />
-                                        <ComboBoxItem Content="Tops" Tag="Tops" />
-                                        <ComboBoxItem Content="Chain" Tag="Chain" />
-                                        <ComboBoxItem Content="Ring" Tag="Ring" />
-                                        <ComboBoxItem Content="Chori" Tag="Chori" />
-                                        <ComboBoxItem Content="Other" Tag="Other" />
-                                    </ComboBox>
+                                    <ComboBox x:Name="itemTypeDropdownTest" Width="180" Height="42" FontSize="18" FontWeight="Bold" IsEditable="True" SelectionChanged="itemTypeDropdown_SelectionChanged" LostFocus="itemTypeDropdown_LostFocus" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -531,18 +533,20 @@
                                     </RadioButton>
                                 </StackPanel>
 
+                                <!-- Group 2.5: Report Fee Checkbox -->
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <CheckBox x:Name="chargeReportPaidMultiCheckBox" IsChecked="True" VerticalAlignment="Center" Cursor="Hand">
+                                        <TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#0F172A">
+                                            <Run Text="Paid / " />
+                                            <Run Text="ادا شدہ (Rs. 200)" Foreground="#0369A1" />
+                                        </TextBlock>
+                                    </CheckBox>
+                                </StackPanel>
+
                                 <!-- Group 3: Item Type Dropdown -->
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                                     <TextBlock Text="Item / چیز:" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#334155" Margin="0,0,10,0" />
-                                    <ComboBox x:Name="itemTypeDropdownMulti" Width="180" Height="42" FontSize="18" FontWeight="Bold">
-                                        <ComboBoxItem Content="-- None / کوئی نہیں --" IsSelected="True" Tag="" />
-                                        <ComboBoxItem Content="Set" Tag="Set" />
-                                        <ComboBoxItem Content="Tops" Tag="Tops" />
-                                        <ComboBoxItem Content="Chain" Tag="Chain" />
-                                        <ComboBoxItem Content="Ring" Tag="Ring" />
-                                        <ComboBoxItem Content="Chori" Tag="Chori" />
-                                        <ComboBoxItem Content="Other" Tag="Other" />
-                                    </ComboBox>
+                                    <ComboBox x:Name="itemTypeDropdownMulti" Width="180" Height="42" FontSize="18" FontWeight="Bold" IsEditable="True" LostFocus="itemTypeDropdown_LostFocus" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1037,10 +1041,10 @@
                     <!-- Top Filter Bar -->
                     <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="10,8,10,8" Margin="0,0,0,10">
                         <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <!-- Customer Filter -->
+                            <!-- Customer Filter Dropdown -->
                             <StackPanel Orientation="Horizontal" Margin="0,4,10,4" VerticalAlignment="Center">
                                 <TextBlock Text="Customer:" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#334155" Margin="0,0,6,0" />
-                                <TextBox x:Name="historySearchCustomer" Width="120" Height="36" FontSize="16" FontWeight="Bold" VerticalContentAlignment="Center" Padding="4,2" TextChanged="historyFilter_Changed" ToolTip="Search by customer name" />
+                                <ComboBox x:Name="historyCustomerComboBox" Width="170" Height="36" FontSize="16" FontWeight="Bold" VerticalContentAlignment="Center" IsEditable="True" SelectionChanged="historyFilter_Changed" ToolTip="Filter by customer name" />
                             </StackPanel>
 
                             <!-- From Date Filter -->
@@ -1336,6 +1340,152 @@
                 </Grid>
             </TabItem>
 
+            <!-- Customer Ledger Tab -->
+            <TabItem Header="Ledger" x:Name="ledgerTab" FontSize="38" FontWeight="Bold" Width="Auto" MinWidth="200" Padding="18,4" Background="#FEF08A">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Pane: Customer List with Remaining Balances -->
+                    <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#94A3B8" BorderThickness="1" Padding="10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Customer Accounts / کھاتہ دار" FontSize="22" FontWeight="Bold" Foreground="#1E293B" Margin="0,0,0,8" />
+
+                            <!-- Search Box -->
+                            <Grid Grid.Row="1" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ledgerCustomerSearchBox" Grid.Column="0" Height="40" FontSize="16" FontWeight="Bold" VerticalContentAlignment="Center" Padding="8,2" TextChanged="ledgerCustomerSearchBox_TextChanged" ToolTip="Search customer name" />
+                                <Button Grid.Column="1" Height="40" Width="75" Content="Refresh" Margin="6,0,0,0" FontSize="14" FontWeight="Bold" Click="ledgerRefreshBtn_Click" />
+                            </Grid>
+
+                            <!-- Customers ListBox -->
+                            <ListBox x:Name="ledgerCustomerListBox" Grid.Row="2" SelectionChanged="ledgerCustomerListBox_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="8,8" Width="315">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Text="{Binding CustomerName}" FontSize="18" FontWeight="Bold" Foreground="#0F172A" />
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="Remaining: " FontSize="14" Foreground="#64748B" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding BalanceDisplay}" FontSize="15" FontWeight="Bold" Foreground="#DC2626" Margin="0,0,12,0" />
+                                                    <TextBlock Text="Unpaid Tests: " FontSize="13" Foreground="#64748B" />
+                                                    <TextBlock Text="{Binding UnpaidCount}" FontSize="13" FontWeight="Bold" Foreground="#475569" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right Pane: Ledger Details -->
+                    <Border Grid.Column="2" Background="#FFFFFF" BorderBrush="#94A3B8" BorderThickness="1" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="12" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Customer Details Header Card -->
+                            <Border Grid.Row="0" Background="#F1F5F9" BorderBrush="#CBD5E1" BorderThickness="1" Padding="14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Left Info -->
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock x:Name="ledgerSelectedCustomerText" Text="Select a Customer / کسٹمر منتخب کریں" FontSize="26" FontWeight="Bold" Foreground="#0F172A" />
+                                        <WrapPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <TextBlock Text="Remaining Cash / واجب الاداء رقم: " FontSize="18" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ledgerRemainingCashText" Text="Rs. 0" FontSize="24" FontWeight="Bold" Foreground="#DC2626" VerticalAlignment="Center" Margin="0,0,24,0" />
+
+                                            <TextBlock Text="Last Paid Date / آخری ادائیگی: " FontSize="16" FontWeight="Bold" Foreground="#64748B" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="ledgerLastPaidDateText" Text="-" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center" />
+                                        </WrapPanel>
+                                    </StackPanel>
+
+                                    <!-- Clear Button -->
+                                    <Button x:Name="clearCustomerBalanceBtn" Grid.Column="1" Height="52" MinWidth="230" Padding="16,4" Background="#16A34A" BorderBrush="#15803D" Click="clearCustomerBalanceBtn_Click" Cursor="Hand" VerticalAlignment="Center">
+                                        <TextBlock FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" TextAlignment="Center">
+                                            <Run Text="Clear for Customer" FontWeight="Bold" />
+                                            <LineBreak />
+                                            <Run Text="ادائیگی درج کریں" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="19" FontWeight="Bold" />
+                                        </TextBlock>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!-- Switchable History Tabs -->
+                            <TabControl x:Name="ledgerSubTabControl" Grid.Row="2" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1">
+                                <!-- Tab 1: Unpaid Test History -->
+                                <TabItem Header="Unpaid Test History / باقی ٹیسٹ" FontSize="20" FontWeight="Bold" Padding="14,6">
+                                    <DataGrid x:Name="ledgerUnpaidDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" HorizontalGridLinesBrush="#E2E8F0" FontSize="15" RowHeight="36" BorderThickness="0">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60" />
+                                            <DataGridTextColumn Header="Date &amp; Time" Binding="{Binding Date}" Width="180" />
+                                            <DataGridTextColumn Header="Receipt #" Binding="{Binding ReceiptNumber}" Width="150" />
+                                            <DataGridTextColumn Header="Item Description" Binding="{Binding ItemDescription}" Width="*" />
+                                            <DataGridTextColumn Header="Fee" Binding="{Binding AmountDisplay}" Width="120">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                        <Setter Property="Foreground" Value="#DC2626" />
+                                                        <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        <Setter Property="Margin" Value="0,0,10,0" />
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </TabItem>
+
+                                <!-- Tab 2: Paid History -->
+                                <TabItem Header="Paid History / ادائیگیوں کا ریکارڈ" FontSize="20" FontWeight="Bold" Padding="14,6">
+                                    <DataGrid x:Name="ledgerPaidDataGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" HorizontalGridLinesBrush="#E2E8F0" FontSize="15" RowHeight="36" BorderThickness="0">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="60" />
+                                            <DataGridTextColumn Header="Payment Date" Binding="{Binding PaymentDate}" Width="180" />
+                                            <DataGridTextColumn Header="Amount Cleared" Binding="{Binding AmountDisplay}" Width="140">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                        <Setter Property="Foreground" Value="#16A34A" />
+                                                        <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        <Setter Property="Margin" Value="0,0,10,0" />
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Receipts Count" Binding="{Binding ReceiptsCount}" Width="130" />
+                                            <DataGridTextColumn Header="Receipts Included" Binding="{Binding ReceiptsSummary}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </TabItem>
+                            </TabControl>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
             <!-- Settings Tab -->
             <TabItem Header="Settings" x:Name="settingsTab" FontSize="38" FontWeight="Bold" Width="Auto" MinWidth="220" Padding="18,4" Background="#E0E7FF">
                 <ScrollViewer Focusable="False" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -1453,7 +1603,45 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Section 5: Save Settings & Status -->
+                            <!-- Section 5: Software Online Updates -->
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Software Online Updates / انٹرنیٹ اپ ڈیٹس" FontSize="20" FontWeight="Bold" Foreground="#1E3A8A" />
+                                    <TextBlock Text="Check and install the latest updates directly from GitHub." FontSize="14" Foreground="#64748B" Margin="0,2,0,10" />
+
+                                    <Grid Margin="0,4,0,10">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="240" />
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="180" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Current Version: " FontSize="15" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="v1.0.1" FontSize="15" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+
+                                        <TextBlock Grid.Row="0" Grid.Column="3" Text="Branch: " FontSize="15" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                        <TextBox x:Name="txtUpdateBranch" Grid.Row="0" Grid.Column="4" Text="xrf-multi-test" Height="34" FontSize="14" FontWeight="Bold" VerticalContentAlignment="Center" Padding="6,2" />
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="GitHub Repo: " FontSize="15" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" Margin="0,10,10,0" />
+                                        <TextBox x:Name="txtUpdateRepo" Grid.Row="1" Grid.Column="1" Text="FaazLaeeq/InstantDealingApp" Height="34" FontSize="14" FontWeight="Bold" VerticalContentAlignment="Center" Padding="6,2" Margin="0,10,0,0" />
+
+                                        <CheckBox x:Name="chkAutoUpdateOnStartup" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2" Content="Auto-check on startup" IsChecked="True" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="0,10,0,0" />
+                                    </Grid>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                        <Button x:Name="btnCheckUpdates" Content="Check for Updates Now" Height="42" Padding="20,0" FontSize="15" FontWeight="Bold" Background="#0284C7" Foreground="#FFFFFF" BorderBrush="#0369A1" Click="btnCheckUpdates_Click" Cursor="Hand" />
+                                        <TextBlock x:Name="txtUpdateStatus" Text="" FontSize="15" FontWeight="Bold" Foreground="#059669" VerticalAlignment="Center" Margin="14,0,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Section 6: Save Settings & Status -->
                             <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="18">
                                 <Grid>
                                     <Grid.ColumnDefinitions>

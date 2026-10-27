@@ -856,7 +856,7 @@ namespace InstantDealingApp
                 }
                 if (focusedElement == laborTextbox)
                 {
-                    SaveButton.Focus();
+                    (PrintPaidButton ?? (UIElement)this).Focus();
                     e.Handled = true;
                     return;
                 }
@@ -1002,54 +1002,103 @@ namespace InstantDealingApp
             if (mainTabControl.SelectedItem == testTab)
             {
                 updateTestCalculations();
-                if (saveButtonText != null)
+                if (ClearButton != null) ClearButton.Visibility = Visibility.Visible;
+                if (SelectAllButton != null) SelectAllButton.Visibility = Visibility.Visible;
+                if (DeselectAllButton != null) DeselectAllButton.Visibility = Visibility.Visible;
+                if (PrintPaidButton != null)
                 {
-                    saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Print / ") { FontWeight = FontWeights.Bold });
-                    saveButtonText.Inlines.Add(new Run("پرنٹ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
+                    PrintPaidButton.Visibility = Visibility.Visible;
+                    if (printPaidButtonText != null)
+                    {
+                        printPaidButtonText.Inlines.Clear();
+                        printPaidButtonText.Inlines.Add(new Run("Print (Paid) / ") { FontWeight = FontWeights.Bold });
+                        printPaidButtonText.Inlines.Add(new Run("پرنٹ ادا شدہ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 23, FontWeight = FontWeights.Bold });
+                    }
+                }
+                if (PrintUnpaidButton != null)
+                {
+                    PrintUnpaidButton.Visibility = Visibility.Visible;
+                    if (printUnpaidButtonText != null)
+                    {
+                        printUnpaidButtonText.Inlines.Clear();
+                        printUnpaidButtonText.Inlines.Add(new Run("Print (Unpaid) / ") { FontWeight = FontWeights.Bold });
+                        printUnpaidButtonText.Inlines.Add(new Run("پرنٹ نا دہندہ (Rs. 200)") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 21, FontWeight = FontWeights.Bold });
+                    }
                 }
             }
             else if (mainTabControl.SelectedItem == multiTestTab)
             {
                 updateMultiTestCalculations();
-                if (saveButtonText != null)
+                if (ClearButton != null) ClearButton.Visibility = Visibility.Visible;
+                if (SelectAllButton != null) SelectAllButton.Visibility = Visibility.Collapsed;
+                if (DeselectAllButton != null) DeselectAllButton.Visibility = Visibility.Collapsed;
+                if (PrintPaidButton != null)
                 {
-                    saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Print Batch / ") { FontWeight = FontWeights.Bold });
-                    saveButtonText.Inlines.Add(new Run("پرنٹ بیچ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
+                    PrintPaidButton.Visibility = Visibility.Visible;
+                    if (printPaidButtonText != null)
+                    {
+                        printPaidButtonText.Inlines.Clear();
+                        printPaidButtonText.Inlines.Add(new Run("Print Batch (Paid) / ") { FontWeight = FontWeights.Bold });
+                        printPaidButtonText.Inlines.Add(new Run("بیچ پرنٹ ادا شدہ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 23, FontWeight = FontWeights.Bold });
+                    }
+                }
+                if (PrintUnpaidButton != null)
+                {
+                    PrintUnpaidButton.Visibility = Visibility.Visible;
+                    if (printUnpaidButtonText != null)
+                    {
+                        printUnpaidButtonText.Inlines.Clear();
+                        printUnpaidButtonText.Inlines.Add(new Run("Print Batch (Unpaid) / ") { FontWeight = FontWeights.Bold });
+                        printUnpaidButtonText.Inlines.Add(new Run("بیچ پرنٹ نا دہندہ (Rs. 200)") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 21, FontWeight = FontWeights.Bold });
+                    }
                 }
             }
             else if (mainTabControl.SelectedItem == ledgerTab)
             {
                 LoadLedgerCustomers(ledgerCustomerSearchBox?.Text?.Trim());
                 RefreshSelectedLedgerDetails();
-                if (saveButtonText != null)
-                {
-                    saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Ledger / ") { FontWeight = FontWeights.Bold });
-                    saveButtonText.Inlines.Add(new Run("کھاتہ") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
-                }
+                if (ClearButton != null) ClearButton.Visibility = Visibility.Collapsed;
+                if (SelectAllButton != null) SelectAllButton.Visibility = Visibility.Collapsed;
+                if (DeselectAllButton != null) DeselectAllButton.Visibility = Visibility.Collapsed;
+                if (PrintPaidButton != null) PrintPaidButton.Visibility = Visibility.Collapsed;
+                if (PrintUnpaidButton != null) PrintUnpaidButton.Visibility = Visibility.Collapsed;
             }
             else if (mainTabControl.SelectedItem == historyTab)
             {
                 _allPrintRecords = LoadPrintHistory();
                 ApplyHistoryFilters();
-                if (saveButtonText != null)
+                if (ClearButton != null) ClearButton.Visibility = Visibility.Collapsed;
+                if (SelectAllButton != null) SelectAllButton.Visibility = Visibility.Collapsed;
+                if (DeselectAllButton != null) DeselectAllButton.Visibility = Visibility.Collapsed;
+                if (PrintPaidButton != null)
                 {
-                    saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Print Selected / ") { FontWeight = FontWeights.Bold });
-                    saveButtonText.Inlines.Add(new Run("منتخب پرنٹ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
+                    PrintPaidButton.Visibility = Visibility.Visible;
+                    if (printPaidButtonText != null)
+                    {
+                        printPaidButtonText.Inlines.Clear();
+                        printPaidButtonText.Inlines.Add(new Run("Print Selected / ") { FontWeight = FontWeights.Bold });
+                        printPaidButtonText.Inlines.Add(new Run("منتخب پرنٹ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 23, FontWeight = FontWeights.Bold });
+                    }
                 }
+                if (PrintUnpaidButton != null) PrintUnpaidButton.Visibility = Visibility.Collapsed;
             }
             else if (mainTabControl.SelectedItem == settingsTab)
             {
                 ApplyAppSettingsToUI();
-                if (saveButtonText != null)
+                if (ClearButton != null) ClearButton.Visibility = Visibility.Collapsed;
+                if (SelectAllButton != null) SelectAllButton.Visibility = Visibility.Collapsed;
+                if (DeselectAllButton != null) DeselectAllButton.Visibility = Visibility.Collapsed;
+                if (PrintPaidButton != null)
                 {
-                    saveButtonText.Inlines.Clear();
-                    saveButtonText.Inlines.Add(new Run("Save Settings / ") { FontWeight = FontWeights.Bold });
-                    saveButtonText.Inlines.Add(new Run("ترتیبات محفوظ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 24, FontWeight = FontWeights.Bold });
+                    PrintPaidButton.Visibility = Visibility.Visible;
+                    if (printPaidButtonText != null)
+                    {
+                        printPaidButtonText.Inlines.Clear();
+                        printPaidButtonText.Inlines.Add(new Run("Save Settings / ") { FontWeight = FontWeights.Bold });
+                        printPaidButtonText.Inlines.Add(new Run("ترتیبات محفوظ کریں") { FontFamily = new FontFamily(new Uri("pack://application:,,,/"), "./font/#Alvi Nastaleeq Regular"), FontSize = 23, FontWeight = FontWeights.Bold });
+                    }
                 }
+                if (PrintUnpaidButton != null) PrintUnpaidButton.Visibility = Visibility.Collapsed;
             }
             }
             catch (Exception ex)
@@ -1137,13 +1186,14 @@ namespace InstantDealingApp
             catch { }
         }
 
-        private void RecordCurrentPrint(DateTime printTime, FlowDocument? doc = null)
+        private void RecordCurrentPrint(DateTime printTime, FlowDocument? doc = null, bool isPaid = false)
         {
             try
             {
                 PrintRecord record = new PrintRecord
                 {
-                    Timestamp = printTime
+                    Timestamp = printTime,
+                    Status = isPaid ? "PAID" : "UNPAID"
                 };
 
                 record.TabType = "Test";
@@ -1256,12 +1306,17 @@ namespace InstantDealingApp
             ApplyHistoryFilters();
         }
 
+        private void historyThisDay_Click(object sender, RoutedEventArgs e)
+        {
+            DateTime today = DateTime.Today;
+            if (historyFromDatePicker != null) historyFromDatePicker.SelectedDate = today;
+            if (historyToDatePicker != null) historyToDatePicker.SelectedDate = today;
+            ApplyHistoryFilters();
+        }
+
         private void historyThisMonth_Click(object sender, RoutedEventArgs e)
         {
-            DateTime now = DateTime.Now;
-            if (historyFromDatePicker != null) historyFromDatePicker.SelectedDate = new DateTime(now.Year, now.Month, 1);
-            if (historyToDatePicker != null) historyToDatePicker.SelectedDate = new DateTime(now.Year, now.Month, DateTime.DaysInMonth(now.Year, now.Month));
-            ApplyHistoryFilters();
+            historyThisDay_Click(sender, e);
         }
 
         private void historyClearFilters_Click(object sender, RoutedEventArgs e)
@@ -3200,7 +3255,7 @@ namespace InstantDealingApp
             updateMultiTestCalculations();
         }
 
-        private void PrintMultiTestBatch()
+        private void PrintMultiTestBatch(bool isPaid = false)
         {
             if (BatchItems.Count == 0)
             {
@@ -3250,13 +3305,22 @@ namespace InstantDealingApp
                 }
                 finally
                 {
-                    RecordBatchPrint(printTime, doc);
+                    RecordBatchPrint(printTime, doc, isPaid);
+                    string rawCust = "";
+                    if (customersMulti != null && !string.IsNullOrWhiteSpace(customersMulti.Text))
+                        rawCust = customersMulti.Text;
+                    else if (customersTest != null && !string.IsNullOrWhiteSpace(customersTest.Text))
+                        rawCust = customersTest.Text;
+                    string cust = CapitalizeCustomerName(rawCust);
+                    string item = $"Batch ({BatchItems.Count} items)";
+                    string receiptNum = printTime.ToString("yyyyMMdd-HHmmss");
+                    LedgerService.RecordReportFee(cust, printTime, receiptNum, item, 200.0, isPaid);
                     ClearAllMultiTestFields();
                 }
             }
         }
 
-        private void RecordBatchPrint(DateTime printTime, FlowDocument doc)
+        private void RecordBatchPrint(DateTime printTime, FlowDocument doc, bool isPaid = false)
         {
             try
             {
@@ -3292,6 +3356,7 @@ namespace InstantDealingApp
                     Labor = sumLabor,
                     Cash = sumCash,
                     GoldRate = goldRate,
+                    Status = isPaid ? "PAID" : "UNPAID",
                     Notes = notes,
                     BatchItems = BatchItems.ToList(),
                     ReceiptXaml = System.Windows.Markup.XamlWriter.Save(doc)
@@ -3394,24 +3459,8 @@ namespace InstantDealingApp
             if (doPrintNotes != null) doPrintNotes.IsChecked = isChecked;
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private void ExecuteSingleTestPrint(bool isPaid)
         {
-            if (mainTabControl.SelectedItem == historyTab)
-            {
-                PrintSelectedHistoryRecords();
-                return;
-            }
-            else if (mainTabControl.SelectedItem == settingsTab)
-            {
-                SaveAppSettings();
-                return;
-            }
-            else if (mainTabControl.SelectedItem == multiTestTab)
-            {
-                PrintMultiTestBatch();
-                return;
-            }
-
             PrintDialog printDlg = new PrintDialog();
 
             DateTime printTime = DateTime.Now;
@@ -3420,7 +3469,6 @@ namespace InstantDealingApp
             IDocumentPaginatorSource idpSource = doc;
             documentView dwin = new documentView(doc);
             dwin.Width = IsSmallSlipSelected ? 220 : 288;
-            //dwin.Show();
 
             bool? print = printDlg.ShowDialog();
             if (print != null && (print ?? false))
@@ -3439,10 +3487,51 @@ namespace InstantDealingApp
                 }
                 finally
                 {
-                    RecordCurrentPrint(printTime, doc);
+                    RecordCurrentPrint(printTime, doc, isPaid);
+                    string cust = CapitalizeCustomerName(customersTest?.Text ?? "");
+                    string item = GetSelectedItemType();
+                    string receiptNum = printTime.ToString("yyyyMMdd-HHmmss");
+                    LedgerService.RecordReportFee(cust, printTime, receiptNum, item, 200.0, isPaid);
                     ClearAllTestFields();
                 }
             }
+        }
+
+        private void PrintPaidButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mainTabControl.SelectedItem == historyTab)
+            {
+                PrintSelectedHistoryRecords();
+            }
+            else if (mainTabControl.SelectedItem == settingsTab)
+            {
+                SaveAppSettings();
+            }
+            else if (mainTabControl.SelectedItem == multiTestTab)
+            {
+                PrintMultiTestBatch(isPaid: true);
+            }
+            else
+            {
+                ExecuteSingleTestPrint(isPaid: true);
+            }
+        }
+
+        private void PrintUnpaidButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mainTabControl.SelectedItem == multiTestTab)
+            {
+                PrintMultiTestBatch(isPaid: false);
+            }
+            else if (mainTabControl.SelectedItem == testTab)
+            {
+                ExecuteSingleTestPrint(isPaid: false);
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            PrintPaidButton_Click(sender, e);
         }
 
         public FlowDocument CreateFlowDocument(DateTime date)

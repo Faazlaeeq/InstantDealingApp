@@ -110,7 +110,7 @@ namespace InstantDealingApp
             }
         }
 
-        public static void RecordReportFee(string customerName, DateTime date, string receiptNumber, string itemDescription, double fee = 200.0)
+        public static void RecordReportFee(string customerName, DateTime date, string receiptNumber, string itemDescription, double fee = 200.0, bool isPaid = false)
         {
             if (string.IsNullOrWhiteSpace(customerName)) customerName = "Walk-in Customer";
             try
@@ -118,10 +118,11 @@ namespace InstantDealingApp
                 using var conn = new SqliteConnection(_connectionString);
                 conn.Open();
 
+                string batchId = isPaid ? "PAID_" + Guid.NewGuid().ToString("N").Substring(0, 8) : "";
                 string sql = @"
                     INSERT INTO CustomerTransactions 
-                    (CustomerName, Date, ReceiptNumber, ItemDescription, Amount, IsPaid) 
-                    VALUES (@customer, @date, @receipt, @item, @amount, 0);
+                    (CustomerName, Date, ReceiptNumber, ItemDescription, Amount, IsPaid, PaymentDate, PaymentBatchId) 
+                    VALUES (@customer, @date, @receipt, @item, @amount, @isPaid, @payDate, @batchId);
                 ";
 
                 using var cmd = new SqliteCommand(sql, conn);
@@ -130,7 +131,26 @@ namespace InstantDealingApp
                 cmd.Parameters.AddWithValue("@receipt", receiptNumber ?? string.Empty);
                 cmd.Parameters.AddWithValue("@item", itemDescription ?? "Gold Test");
                 cmd.Parameters.AddWithValue("@amount", fee);
+                cmd.Parameters.AddWithValue("@isPaid", isPaid ? 1 : 0);
+                cmd.Parameters.AddWithValue("@payDate", isPaid ? date.ToString("yyyy-MM-dd HH:mm:ss") : (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@batchId", isPaid ? batchId : (object)DBNull.Value);
                 cmd.ExecuteNonQuery();
+
+                if (isPaid)
+                {
+                    string paySql = @"
+                        INSERT INTO PaymentRecords 
+                        (PaymentBatchId, CustomerName, PaymentDate, AmountPaid, ReceiptsCount, ReceiptsSummary) 
+                        VALUES (@batchId, @customer, @date, @amount, 1, @summary);
+                    ";
+                    using var payCmd = new SqliteCommand(paySql, conn);
+                    payCmd.Parameters.AddWithValue("@batchId", batchId);
+                    payCmd.Parameters.AddWithValue("@customer", customerName.Trim());
+                    payCmd.Parameters.AddWithValue("@date", date.ToString("yyyy-MM-dd HH:mm:ss"));
+                    payCmd.Parameters.AddWithValue("@amount", fee);
+                    payCmd.Parameters.AddWithValue("@summary", $"Paid on Print: {receiptNumber}");
+                    payCmd.ExecuteNonQuery();
+                }
             }
             catch (Exception ex)
             {

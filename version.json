@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
-  "downloadUrl": "https://files.catbox.moe/t6dlvg.zip",
-  "releaseNotes": "Added Customer Ledger tab with SQLite database, 200 PKR report billing, customer dropdown filter in history, dynamic items.json list, and auto-updater."
+  "version": "1.0.2",
+  "downloadUrl": "https://files.catbox.moe/cl6m3g.zip",
+  "releaseNotes": "Replaced paid checkbox with dedicated Print Paid and Print Unpaid buttons on both tabs. Changed history filter from This Month to This Day."
 }

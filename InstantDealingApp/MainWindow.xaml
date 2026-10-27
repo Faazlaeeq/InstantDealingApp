@@ -187,15 +187,7 @@
                                     </RadioButton>
                                 </StackPanel>
 
-                                <!-- Group 2.5: Report Fee Checkbox -->
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <CheckBox x:Name="chargeReportPaidCheckBox" IsChecked="True" VerticalAlignment="Center" Cursor="Hand">
-                                        <TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#0F172A">
-                                            <Run Text="Paid / " />
-                                            <Run Text="ادا شدہ (Rs. 200)" Foreground="#0369A1" />
-                                        </TextBlock>
-                                    </CheckBox>
-                                </StackPanel>
+
 
                                 <!-- Group 3: Item Type Dropdown -->
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -533,15 +525,7 @@
                                     </RadioButton>
                                 </StackPanel>
 
-                                <!-- Group 2.5: Report Fee Checkbox -->
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <CheckBox x:Name="chargeReportPaidMultiCheckBox" IsChecked="True" VerticalAlignment="Center" Cursor="Hand">
-                                        <TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#0F172A">
-                                            <Run Text="Paid / " />
-                                            <Run Text="ادا شدہ (Rs. 200)" Foreground="#0369A1" />
-                                        </TextBlock>
-                                    </CheckBox>
-                                </StackPanel>
+
 
                                 <!-- Group 3: Item Type Dropdown -->
                                 <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -1080,7 +1064,7 @@
                             </StackPanel>
 
                             <!-- This Month Button -->
-                            <Button x:Name="historyThisMonthBtn" Height="36" Padding="10,0" Margin="0,4,6,4" Content="This Month / پورا مہینہ" FontSize="14" FontWeight="Bold" Background="#EFF6FF" Foreground="#1E40AF" BorderBrush="#93C5FD" Click="historyThisMonth_Click" ToolTip="Filter for current month (1st to last day)" />
+                            <Button x:Name="historyThisDayBtn" Height="36" Padding="10,0" Margin="0,4,6,4" Content="This Day / آج کا دن" FontSize="14" FontWeight="Bold" Background="#EFF6FF" Foreground="#1E40AF" BorderBrush="#93C5FD" Click="historyThisDay_Click" ToolTip="Filter for today only" />
 
                             <!-- Clear Filters Button -->
                             <Button x:Name="historyClearFiltersBtn" Height="36" Padding="10,0" Margin="0,4,6,4" Content="Clear / صاف کریں" FontSize="14" FontWeight="Bold" Background="#F1F5F9" BorderBrush="#CBD5E1" Click="historyClearFilters_Click" ToolTip="Reset customer search and date filters" />
@@ -1674,7 +1658,9 @@
                 <ColumnDefinition Width="6" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="6" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1.15*" />
+                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="1.15*" />
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0" Height="52" VerticalAlignment="Center" Name="ClearButton" Click="ClearButton_Click" Background="#F1F5F9" BorderBrush="#CBD5E1">
@@ -1698,10 +1684,19 @@
                 </TextBlock>
             </Button>
 
-            <Button Grid.Column="6" Height="52" VerticalAlignment="Center" Name="SaveButton" Click="SaveButton_Click" Background="#0284C7" BorderBrush="#0369A1">
-                <TextBlock x:Name="saveButtonText" FontSize="20" VerticalAlignment="Center" Foreground="#FFFFFF" FontWeight="Bold">
-                    <Run Text="Print / " FontWeight="Bold" />
-                    <Run Text="پرنٹ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="24" FontWeight="Bold" />
+            <!-- Print Paid Button -->
+            <Button Grid.Column="6" Height="52" VerticalAlignment="Center" Name="PrintPaidButton" Click="PrintPaidButton_Click" Background="#16A34A" BorderBrush="#15803D" Cursor="Hand">
+                <TextBlock x:Name="printPaidButtonText" FontSize="19" VerticalAlignment="Center" Foreground="#FFFFFF" FontWeight="Bold">
+                    <Run Text="Print (Paid) / " FontWeight="Bold" />
+                    <Run Text="پرنٹ ادا شدہ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="23" FontWeight="Bold" />
+                </TextBlock>
+            </Button>
+
+            <!-- Print Unpaid Button -->
+            <Button Grid.Column="8" Height="52" VerticalAlignment="Center" Name="PrintUnpaidButton" Click="PrintUnpaidButton_Click" Background="#D97706" BorderBrush="#B45309" Cursor="Hand">
+                <TextBlock x:Name="printUnpaidButtonText" FontSize="19" VerticalAlignment="Center" Foreground="#FFFFFF" FontWeight="Bold">
+                    <Run Text="Print (Unpaid) / " FontWeight="Bold" />
+                    <Run Text="پرنٹ نا دہندہ" FontFamily="./font/#Alvi Nastaleeq Regular" FontSize="23" FontWeight="Bold" />
                 </TextBlock>
             </Button>
         </Grid>
